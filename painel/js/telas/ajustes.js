@@ -12,12 +12,12 @@ function formularioPlano(plano, aoSalvar) {
     form.append(
       campo("Nome", entradaTexto("nome", plano?.nome || "", { placeholder: "Plano 2x na semana", required: true })),
       el("div", { class: "form__par" }, [
-        campo("Sessoes por semana", entradaTexto("sessoes_semana", plano?.sessoes_semana ?? 2, { type: "number", min: 1, max: 7 })),
-        campo("Sessoes por mes", entradaTexto("sessoes_mes", plano?.sessoes_mes ?? 8, { type: "number", min: 1, max: 31 })),
+        campo("Sessões por semana", entradaTexto("sessoes_semana", plano?.sessoes_semana ?? 2, { type: "number", min: 1, max: 7 })),
+        campo("Sessões por mês", entradaTexto("sessoes_mes", plano?.sessoes_mes ?? 8, { type: "number", min: 1, max: 31 })),
       ]),
       campo("Valor mensal", entradaTexto("valor", plano?.valor ?? 0, { type: "number", min: 0, step: "0.01" })),
-      campo("Situacao", entradaSelecao("ativo", [
-        { valor: "true", texto: "Disponivel para venda" },
+      campo("Situação", entradaSelecao("ativo", [
+        { valor: "true", texto: "Disponível para venda" },
         { valor: "false", texto: "Fora de linha" },
       ], String(plano?.ativo ?? true))),
       el("button", { class: "bt bt--primario bt--cheio", type: "submit", texto: novo ? "Cadastrar plano" : "Salvar" })
@@ -54,13 +54,13 @@ export async function montar(raiz) {
     el("div", { class: "tela__topo" }, [
       el("div", {}, [
         el("h1", { class: "tela__titulo", texto: "Ajustes" }),
-        el("p", { class: "tela__sub", texto: "Como o estudio funciona no dia a dia" }),
+        el("p", { class: "tela__sub", texto: "Como o estúdio funciona no dia a dia" }),
       ]),
     ])
   );
 
   /* dados do estudio */
-  const bloco = el("section", { class: "bloco" }, [el("h2", { class: "bloco__titulo", texto: "Estudio" })]);
+  const bloco = el("section", { class: "bloco" }, [el("h2", { class: "bloco__titulo", texto: "Estúdio" })]);
   const form = el("form", { class: "form" });
   form.append(
     campo("Nome", entradaTexto("nome", estudio.nome || "")),
@@ -68,10 +68,10 @@ export async function montar(raiz) {
       campo("WhatsApp", entradaTexto("whatsapp", estudio.whatsapp || ""), "Com DDI e DDD, so numeros"),
       campo("Alunos ao mesmo tempo", entradaTexto("capacidade", estudio.capacidade ?? 2, { type: "number", min: 1, max: 20 }), "Quantos coletes atendem juntos"),
     ]),
-    campo("Endereco", entradaTexto("endereco", estudio.endereco || "")),
+    campo("Endereço", entradaTexto("endereco", estudio.endereco || "")),
     el("div", { class: "form__par" }, [
-      campo("Duracao da sessao", entradaSelecao("duracao_padrao", [20, 25, 30, 45, 60].map((v) => ({ valor: v, texto: v + " minutos" })), estudio.duracao_padrao || 30)),
-      campo("Intervalo de recuperacao", entradaSelecao("intervalo_recuperacao", [0, 12, 24, 36, 48, 72].map((v) => ({ valor: v, texto: v ? v + " horas" : "Sem controle" })), estudio.intervalo_recuperacao ?? 24), "O painel avisa se marcar antes disso"),
+      campo("Duração da sessão", entradaSelecao("duracao_padrao", [20, 25, 30, 45, 60].map((v) => ({ valor: v, texto: v + " minutos" })), estudio.duracao_padrao || 30)),
+      campo("Intervalo de recuperação", entradaSelecao("intervalo_recuperacao", [0, 12, 24, 36, 48, 72].map((v) => ({ valor: v, texto: v ? v + " horas" : "Sem controle" })), estudio.intervalo_recuperacao ?? 24), "O painel avisa se marcar antes disso"),
     ]),
     el("div", { class: "form__par" }, [
       campo("Abre as", entradaTexto("abre", (estudio.abre || "07:00").slice(0, 5), { type: "time" })),
@@ -130,9 +130,9 @@ export async function montar(raiz) {
         el("li", {}, [
           el("div", {}, [
             el("strong", { texto: p.nome }),
-            el("span", { texto: `${p.sessoes_semana}x na semana  ·  ${dinheiro(p.valor)} por mes` }),
+            el("span", { texto: `${p.sessoes_semana}x na semana  ·  ${dinheiro(p.valor)} por mês` }),
           ]),
-          p.ativo ? etiqueta("Disponivel", "ok") : etiqueta("Fora de linha", "cinza"),
+          p.ativo ? etiqueta("Disponível", "ok") : etiqueta("Fora de linha", "cinza"),
           el("button", { class: "bt bt--linha bt--peq", texto: "Editar", onclick: () => formularioPlano(p, recarregar) }),
         ])
       ))
@@ -144,11 +144,11 @@ export async function montar(raiz) {
   const blocoSistema = el("section", { class: "bloco" }, [el("h2", { class: "bloco__titulo", texto: "Sistema" })]);
   if (DEMO) {
     blocoSistema.append(
-      el("p", { class: "obs", texto: "O painel esta em modo demonstracao. Os dados sao de exemplo e ficam guardados apenas neste navegador. Para usar de verdade, preencha o arquivo config.js com os dados do Supabase." }),
+      el("p", { class: "obs", texto: "O painel está em modo demonstração. Os dados são de exemplo e ficam guardados apenas neste navegador. Para usar de verdade, preencha o arquivo config.js com os dados do Supabase." }),
       el("button", {
         class: "bt bt--linha bt--peq", texto: "Recarregar dados de exemplo",
         onclick: async () => {
-          if (!(await confirmar("Apagar as alteracoes e voltar aos dados de exemplo?", { rotuloOk: "Recarregar", perigo: true }))) return;
+          if (!(await confirmar("Apagar as alterações e voltar aos dados de exemplo?", { rotuloOk: "Recarregar", perigo: true }))) return;
           reiniciarDemo();
           aviso("Dados de exemplo recarregados.");
           location.reload();
@@ -157,8 +157,8 @@ export async function montar(raiz) {
     );
   } else {
     blocoSistema.append(
-      el("p", { class: "obs", texto: "Painel ligado ao banco de dados. Cada usuario enxerga apenas o proprio estudio." }),
-      el("p", { class: "obs", texto: "ID do estudio: " + (estudio.id || "") })
+      el("p", { class: "obs", texto: "Painel ligado ao banco de dados. Cada usuário enxerga apenas o próprio estúdio." }),
+      el("p", { class: "obs", texto: "ID do estúdio: " + (estudio.id || "") })
     );
   }
   raiz.appendChild(blocoSistema);

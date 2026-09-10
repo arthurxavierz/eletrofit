@@ -1,8 +1,8 @@
 /* Funcoes de apoio usadas em todas as telas */
 
-export const DIAS = ["Domingo", "Segunda", "Terca", "Quarta", "Quinta", "Sexta", "Sabado"];
-export const DIAS_CURTO = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
-export const MESES = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho",
+export const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+export const DIAS_CURTO = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+export const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho",
   "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
 export function hoje() {

@@ -1,4 +1,4 @@
-/* Tela inicial: o que acontece hoje e o que precisa de atencao */
+/* Tela inicial: o que acontece hoje e o que precisa de atenção */
 
 import { resumo, atualizarSessao } from "../db.js";
 import { el, limpar, hora, dinheiro, dataBr, primeiroNome, iniciais, DIAS } from "../util.js";
@@ -26,16 +26,16 @@ export async function montar(raiz) {
         el("h1", { class: "tela__titulo", texto: "Hoje" }),
         el("p", { class: "tela__sub", texto: `${DIAS[agora.getDay()]}, ${dataBr(agora)}` }),
       ]),
-      el("button", { class: "bt bt--primario", texto: "Marcar sessao", onclick: () => abrirNovaSessao({ data: agora }, recarregar) }),
+      el("button", { class: "bt bt--primario", texto: "Marcar sessão", onclick: () => abrirNovaSessao({ data: agora }, recarregar) }),
     ])
   );
 
   /* numeros */
   raiz.appendChild(
     el("div", { class: "numeros" }, [
-      cartaoNumero(dados.sessoesHoje.filter((s) => s.status !== "cancelada").length, "sessoes hoje"),
+      cartaoNumero(dados.sessoesHoje.filter((s) => s.status !== "cancelada").length, "sessões hoje"),
       cartaoNumero(dados.ativos, "alunos ativos"),
-      cartaoNumero(dinheiro(dados.aReceber), "a receber no mes"),
+      cartaoNumero(dinheiro(dados.aReceber), "a receber no mês"),
       cartaoNumero(dados.atrasadas.length, "mensalidades atrasadas", dados.atrasadas.length ? "alerta" : ""),
     ])
   );
@@ -56,7 +56,7 @@ export async function montar(raiz) {
   }
   if (dados.venceSemana.length) {
     avisos.push({
-      texto: `${dados.venceSemana.length} mensalidade${dados.venceSemana.length > 1 ? "s vencem" : " vence"} nos proximos sete dias`,
+      texto: `${dados.venceSemana.length} mensalidade${dados.venceSemana.length > 1 ? "s vencem" : " vence"} nos próximos sete dias`,
       acao: "Ver financeiro", destino: "#financeiro",
     });
   }
@@ -76,7 +76,7 @@ export async function montar(raiz) {
   const doDia = dados.sessoesHoje.filter((s) => s.status !== "cancelada");
 
   if (!doDia.length) {
-    bloco.appendChild(vazio("Nenhuma sessao marcada para hoje.",
+    bloco.appendChild(vazio("Nenhuma sessão marcada para hoje.",
       el("button", { class: "bt bt--linha bt--peq", texto: "Marcar a primeira", onclick: () => abrirNovaSessao({ data: agora }, recarregar) })));
   } else {
     bloco.appendChild(
@@ -92,19 +92,19 @@ export async function montar(raiz) {
             el("span", { class: "avatar avatar--peq", texto: iniciais(aluno.nome) }),
             el("div", {}, [
               el("strong", { texto: aluno.nome || "Aluno" }),
-              el("span", { texto: aluno.saude_liberado === false ? "Ficha de saude pendente" : (s.intensidade || "Sem anotacao") }),
+              el("span", { texto: aluno.saude_liberado === false ? "Ficha de saúde pendente" : (s.intensidade || "Sem anotação") }),
             ]),
           ]),
           el("div", { class: "sessao__acoes" },
             s.status === "agendada"
               ? [
-                  botaoComIcone("certo", "Presenca", async () => { await atualizarSessao(s.id, { status: "realizada" }); aviso("Presenca registrada."); recarregar(); }, "bt--linha bt--peq"),
+                  botaoComIcone("certo", "Presença", async () => { await atualizarSessao(s.id, { status: "realizada" }); aviso("Presença registrada."); recarregar(); }, "bt--linha bt--peq"),
                   botaoComIcone("errado", "Falta", async () => { await atualizarSessao(s.id, { status: "falta" }); aviso("Falta registrada."); recarregar(); }, "bt--linha bt--peq"),
-                  botaoIcone("reticencias", "Mais acoes", () => abrirAcoesSessao(s, recarregar), "bt--linha bt--peq"),
+                  botaoIcone("reticencias", "Mais ações", () => abrirAcoesSessao(s, recarregar), "bt--linha bt--peq"),
                 ]
               : [
                   etiqueta(s.status === "realizada" ? "Feita" : "Falta", s.status === "realizada" ? "ok" : "erro"),
-                  botaoIcone("reticencias", "Mais acoes", () => abrirAcoesSessao(s, recarregar), "bt--linha bt--peq"),
+                  botaoIcone("reticencias", "Mais ações", () => abrirAcoesSessao(s, recarregar), "bt--linha bt--peq"),
                 ]
           ),
         ]);
@@ -113,6 +113,27 @@ export async function montar(raiz) {
     );
   }
   raiz.appendChild(bloco);
+
+  /* aniversariantes do mes */
+  if (dados.aniversariantes && dados.aniversariantes.length) {
+    raiz.appendChild(
+      el("section", { class: "bloco" }, [
+        el("h2", { class: "bloco__titulo", texto: "Aniversariantes do mês" }),
+        el("ul", { class: "lista-simples" }, dados.aniversariantes.map((a) =>
+          el("li", {}, [
+            el("div", {}, [
+              el("strong", {}, [
+                document.createTextNode(a.nome + "  "),
+                a.aniversario_hoje ? el("span", { class: "hoje-tag", texto: "hoje" }) : null,
+              ]),
+              el("span", { texto: "Dia " + a.aniversario_dia }),
+            ]),
+            botaoComIcone("whatsapp", "Parabenizar", () => abrirWhats(a.telefone, `Feliz aniversário, ${primeiroNome(a.nome)}! Toda a equipe da Eletrofit deseja um dia excelente.`), "bt--linha bt--peq"),
+          ])
+        )),
+      ])
+    );
+  }
 
   /* cobranca do dia */
   if (dados.atrasadas.length) {
@@ -124,7 +145,7 @@ export async function montar(raiz) {
         return el("li", {}, [
           el("div", {}, [
             el("strong", { texto: aluno.nome || "Aluno" }),
-            el("span", { texto: `${dinheiro(c.valor)}  ·  venceu ha ${dias} dia${dias === 1 ? "" : "s"}` }),
+            el("span", { texto: `${dinheiro(c.valor)}  ·  venceu há ${dias} dia${dias === 1 ? "" : "s"}` }),
           ]),
           botaoComIcone("whatsapp", "Cobrar", () => abrirWhats(aluno.telefone, textoCobranca(aluno, c)), "bt--linha bt--peq"),
         ]);

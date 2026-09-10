@@ -72,7 +72,7 @@ export async function montar(raiz) {
           ]),
         ]),
         el("div", { class: "aluno__lado" }, [
-          a.saude_liberado ? null : etiqueta("Saude", "erro"),
+          a.saude_liberado ? null : etiqueta("Saúde", "erro"),
           a.status === "ativo" ? null : etiqueta(a.status === "experimental" ? "Experimental" : "Inativo",
             a.status === "experimental" ? "aviso" : "cinza"),
           botaoIcone("whatsapp", "Falar no WhatsApp com " + a.nome, () => abrirWhats(a.telefone, `Oi ${a.nome.split(" ")[0]}, tudo bem?`), "bt--peq"),

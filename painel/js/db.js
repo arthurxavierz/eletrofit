@@ -34,7 +34,7 @@ async function sb() {
     }
   }
   if (!criar) {
-    throw new Error("Nao foi possivel carregar a biblioteca do Supabase. Verifique a internet. " + (ultimoErro ? ultimoErro.message : ""));
+    throw new Error("Não foi possível carregar a biblioteca do Supabase. Verifique a internet. " + (ultimoErro ? ultimoErro.message : ""));
   }
   cliente = criar(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
     auth: { persistSession: true, autoRefreshToken: true },
@@ -65,9 +65,9 @@ function salvarDemo() {
 function semear() {
   const est = {
     id: "estudio-demo",
-    nome: "Eletrofit Estudio",
+    nome: "Eletrofit Estúdio",
     whatsapp: "5534991208519",
-    endereco: "Av. Jacinto Barbosa, 622, Sao Francisco, Patrocinio, MG",
+    endereco: "Av. Jacinto Barbosa, 622, São Francisco, Patrocínio, MG",
     capacidade: 2,
     duracao_padrao: 30,
     intervalo_recuperacao: 24,
@@ -83,21 +83,29 @@ function semear() {
   const nomes = [
     ["Ana Paula Ribeiro", "34991110001", "Emagrecimento", "p2", true],
     ["Carlos Eduardo Melo", "34991110002", "Fortalecimento muscular", "p2", true],
-    ["Juliana Faria", "34991110003", "Reabilitacao ou alivio de dor", "p3", true],
-    ["Marcos Vinicius Dias", "34991110004", "Condicionamento fisico", "p1", true],
+    ["Juliana Faria", "34991110003", "Reabilitação ou alívio de dor", "p3", true],
+    ["Marcos Vinicius Dias", "34991110004", "Condicionamento físico", "p1", true],
     ["Beatriz Camargo", "34991110005", "Emagrecimento", "p2", false],
     ["Rafael Andrade", "34991110006", "Fortalecimento muscular", "p3", true],
     ["Larissa Nunes", "34991110007", "Emagrecimento", "p1", true],
-    ["Tiago Moreira", "34991110008", "Condicionamento fisico", "p2", true],
+    ["Tiago Moreira", "34991110008", "Condicionamento físico", "p2", true],
   ];
   const alunos = [];
   const matriculas = [];
+  // alguns aniversarios neste mes, para a demonstracao mostrar o bloco
+  const mesAtual = new Date().getMonth();
+  const aniversarios = {
+    0: new Date(1994, mesAtual, 12),
+    3: new Date(1990, mesAtual, 24),
+    5: new Date(1998, mesAtual, new Date().getDate()),
+  };
   nomes.forEach((n, i) => {
     const id = "a" + (i + 1);
     alunos.push({
       id, estudio_id: est.id, nome: n[0], telefone: n[1], email: "",
-      nascimento: null, objetivo: n[2], status: i === 7 ? "experimental" : "ativo",
-      saude_liberado: n[4], saude_restricoes: n[4] ? "" : "Aguardando liberacao medica",
+      nascimento: aniversarios[i] ? iso(aniversarios[i]) : (i % 2 ? iso(new Date(1995 - i, (mesAtual + 5) % 12, 8 + i)) : null),
+      objetivo: n[2], status: i === 7 ? "experimental" : "ativo",
+      saude_liberado: n[4], saude_restricoes: n[4] ? "" : "Aguardando liberação médica",
       saude_atualizado_em: n[4] ? iso(new Date()) : null,
       observacoes: "", criado_em: new Date().toISOString(),
     });
@@ -150,7 +158,7 @@ function semear() {
 
   const solicitacoes = [
     { id: novoId(), estudio_id: est.id, nome: "Fernanda Lopes", telefone: "34991110010", objetivo: "Emagrecimento", periodo: "Noite, 18h as 20h30", origem: "site", status: "nova", criado_em: new Date().toISOString() },
-    { id: novoId(), estudio_id: est.id, nome: "Pedro Henrique Souza", telefone: "34991110011", objetivo: "Ainda nao sei, quero entender", periodo: "Manha, 07h as 12h", origem: "site", status: "nova", criado_em: somarDias(new Date(), -1).toISOString() },
+    { id: novoId(), estudio_id: est.id, nome: "Pedro Henrique Souza", telefone: "34991110011", objetivo: "Ainda não sei, quero entender", periodo: "Manha, 07h as 12h", origem: "site", status: "nova", criado_em: somarDias(new Date(), -1).toISOString() },
   ];
 
   return { estudio: est, planos, alunos, matriculas, sessoes, cobrancas, solicitacoes };
@@ -188,13 +196,13 @@ function clonar(x) {
 export async function entrar(email, senha) {
   if (DEMO) {
     localStorage.setItem("eletrofit.demo.logado", "1");
-    return { nome: "Demonstracao" };
+    return { nome: "Demonstração" };
   }
   const c = await sb();
   const res = await c.auth.signInWithPassword({ email, password: senha });
   if (res.error) {
     const m = res.error.message || "";
-    if (/invalid/i.test(m)) throw new Error("E-mail ou senha nao conferem.");
+    if (/invalid/i.test(m)) throw new Error("E-mail ou senha não conferem.");
     throw new Error(m);
   }
   return res.data.user;
@@ -219,7 +227,7 @@ export async function temSessao() {
 export async function meuPerfil() {
   if (DEMO) {
     const d = carregarDemo();
-    return { nome: "Demonstracao", papel: "dono", estudio: clonar(d.estudio) };
+    return { nome: "Demonstração", papel: "dono", estudio: clonar(d.estudio) };
   }
   const c = await sb();
   const perfil = erro(await c.from("perfis").select("nome, papel, estudio_id").single());
@@ -648,6 +656,19 @@ export async function resumo() {
   const recebido = doMes.filter((c) => c.status === "paga").reduce((s, c) => s + Number(c.valor), 0);
   const aReceber = doMes.filter((c) => c.status === "aberta").reduce((s, c) => s + Number(c.valor), 0);
 
+  // aniversariantes do mes, ordenados pelo dia
+  const mes = inicioHoje.getMonth();
+  const diaHoje = inicioHoje.getDate();
+  const aniversariantes = alunos
+    .filter((a) => a.nascimento && a.status !== "inativo")
+    .map((a) => {
+      const d = new Date(a.nascimento + "T12:00:00");
+      return { aluno: a, mes: d.getMonth(), dia: d.getDate() };
+    })
+    .filter((x) => x.mes === mes)
+    .sort((a, b) => a.dia - b.dia)
+    .map((x) => ({ ...x.aluno, aniversario_dia: x.dia, aniversario_hoje: x.dia === diaHoje }));
+
   return {
     sessoesHoje,
     ativos: alunos.filter((a) => a.status === "ativo").length,
@@ -657,5 +678,6 @@ export async function resumo() {
     recebido,
     aReceber,
     solicitacoes,
+    aniversariantes,
   };
 }

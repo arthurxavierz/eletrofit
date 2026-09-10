@@ -24,7 +24,7 @@ function linhaCobranca(c, recarregar) {
   return el("li", { class: "cobranca " + (atrasada ? "cobranca--atrasada" : c.status === "paga" ? "cobranca--paga" : "") }, [
     el("button", { class: "cobranca__aluno", onclick: () => abrirFicha(c.aluno_id, recarregar) }, [
       el("strong", { texto: aluno.nome || "Aluno" }),
-      el("span", { texto: atrasada ? `Venceu ha ${dias} dia${dias === 1 ? "" : "s"}` : `Vence ${dataBr(c.vencimento)}` }),
+      el("span", { texto: atrasada ? `Venceu há ${dias} dia${dias === 1 ? "" : "s"}` : `Vence ${dataBr(c.vencimento)}` }),
     ]),
     el("div", { class: "cobranca__valor" }, [
       el("strong", { texto: dinheiro(c.valor) }),
@@ -43,8 +43,8 @@ function linhaCobranca(c, recarregar) {
                   campo("Como recebeu", entradaSelecao("forma", [
                     { valor: "Pix", texto: "Pix" },
                     { valor: "Dinheiro", texto: "Dinheiro" },
-                    { valor: "Cartao", texto: "Cartao" },
-                    { valor: "Transferencia", texto: "Transferencia" },
+                    { valor: "Cartão", texto: "Cartão" },
+                    { valor: "Transferência", texto: "Transferência" },
                   ], "Pix")),
                   el("button", { class: "bt bt--primario bt--cheio", type: "submit", texto: "Confirmar recebimento" })
                 );
@@ -97,14 +97,14 @@ export async function montar(raiz) {
       ]),
       el("div", { class: "linha-botoes" }, [
         el("button", { class: "bt bt--linha bt--peq", texto: "Anterior", onclick: () => { mes = somarMeses(mes, -1); montar(raiz); } }),
-        el("button", { class: "bt bt--linha bt--peq", texto: "Proximo", onclick: () => { mes = somarMeses(mes, 1); montar(raiz); } }),
+        el("button", { class: "bt bt--linha bt--peq", texto: "Próximo", onclick: () => { mes = somarMeses(mes, 1); montar(raiz); } }),
         el("button", {
           class: "bt bt--primario bt--peq", texto: "Gerar mensalidades",
           onclick: async () => {
-            const ok = await confirmar(`Gerar as mensalidades de ${mesPorExtenso(mes)} para todos os alunos com plano ativo? Quem ja tem mensalidade nao recebe outra.`, { rotuloOk: "Gerar" });
+            const ok = await confirmar(`Gerar as mensalidades de ${mesPorExtenso(mes)} para todos os alunos com plano ativo? Quem já tem mensalidade não recebe outra.`, { rotuloOk: "Gerar" });
             if (!ok) return;
             const quantas = await gerarCobrancasDoMes(mes);
-            aviso(quantas ? `${quantas} mensalidade${quantas > 1 ? "s geradas" : " gerada"}.` : "Todas as mensalidades deste mes ja existiam.");
+            aviso(quantas ? `${quantas} mensalidade${quantas > 1 ? "s geradas" : " gerada"}.` : "Todas as mensalidades deste mês já existiam.");
             montar(raiz);
           },
         }),
@@ -114,16 +114,36 @@ export async function montar(raiz) {
 
   raiz.appendChild(
     el("div", { class: "numeros" }, [
-      cartaoNumero(dinheiro(recebido), "recebido no mes", "ok"),
-      cartaoNumero(dinheiro(aReceber), "a receber no mes"),
+      cartaoNumero(dinheiro(recebido), "recebido no mês", "ok"),
+      cartaoNumero(dinheiro(aReceber), "a receber no mês"),
       cartaoNumero(dinheiro(totalAtrasado), "em atraso", totalAtrasado ? "alerta" : ""),
       cartaoNumero(atrasadas.length, "alunos em atraso", atrasadas.length ? "alerta" : ""),
     ])
   );
 
+  /* recebido por forma de pagamento, no mes */
+  const pagas = doMes.filter((c) => c.status === "paga");
+  if (pagas.length) {
+    const porForma = {};
+    pagas.forEach((c) => {
+      const f = c.forma || "Não informado";
+      porForma[f] = (porForma[f] || 0) + Number(c.valor);
+    });
+    raiz.appendChild(
+      el("div", { class: "formas" }, Object.entries(porForma)
+        .sort((a, b) => b[1] - a[1])
+        .map(([forma, valor]) =>
+          el("span", { class: "forma" }, [
+            document.createTextNode(forma + " "),
+            el("strong", { texto: dinheiro(valor) }),
+          ])
+        ))
+    );
+  }
+
   raiz.appendChild(
     el("div", { class: "abas" }, [
-      el("button", { class: "abas__item " + (aba === "mes" ? "ativo" : ""), texto: "Do mes", onclick: () => { aba = "mes"; montar(raiz); } }),
+      el("button", { class: "abas__item " + (aba === "mes" ? "ativo" : ""), texto: "Do mês", onclick: () => { aba = "mes"; montar(raiz); } }),
       el("button", { class: "abas__item " + (aba === "atraso" ? "ativo" : ""), texto: `Em atraso (${atrasadas.length})`, onclick: () => { aba = "atraso"; montar(raiz); } }),
       el("button", { class: "abas__item " + (aba === "aberto" ? "ativo" : ""), texto: `Tudo em aberto (${abertas.length})`, onclick: () => { aba = "aberto"; montar(raiz); } }),
     ])
@@ -134,7 +154,7 @@ export async function montar(raiz) {
   if (!lista.length) {
     raiz.appendChild(vazio(
       aba === "mes"
-        ? "Nenhuma mensalidade neste mes. Use o botao gerar mensalidades."
+        ? "Nenhuma mensalidade neste mês. Use o botão gerar mensalidades."
         : "Nada em aberto por aqui. Bom sinal."
     ));
     return;

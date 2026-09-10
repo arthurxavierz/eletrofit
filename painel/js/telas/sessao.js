@@ -48,10 +48,10 @@ export async function ocupacaoNoHorario(inicio, duracao, ignorarId = null) {
 export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } = {}, aoSalvar) {
   const estudio = estado.perfil.estudio;
 
-  abrirFolha("Marcar sessao", async (corpo, fechar) => {
+  abrirFolha("Marcar sessão", async (corpo, fechar) => {
     const alunos = (await listarAlunos({})).filter((a) => a.status !== "inativo");
     if (!alunos.length) {
-      corpo.appendChild(el("p", { class: "obs", texto: "Cadastre um aluno antes de marcar a primeira sessao." }));
+      corpo.appendChild(el("p", { class: "obs", texto: "Cadastre um aluno antes de marcar a primeira sessão." }));
       return;
     }
 
@@ -62,12 +62,20 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
         campo("Dia", entradaTexto("dia", iso(data || new Date()), { type: "date", required: true })),
         campo("Hora", entradaSelecao("hora", horariosPossiveis(estudio).map((h) => ({ valor: h, texto: h })), horaInicial || "18:00")),
       ]),
-      campo("Duracao", entradaSelecao("duracao", [
-        { valor: 20, texto: "20 minutos" },
-        { valor: 30, texto: "30 minutos" },
-        { valor: 45, texto: "45 minutos" },
-        { valor: 60, texto: "60 minutos" },
-      ], estudio.duracao_padrao || 30))
+      el("div", { class: "form__par" }, [
+        campo("Duração", entradaSelecao("duracao", [
+          { valor: 20, texto: "20 minutos" },
+          { valor: 30, texto: "30 minutos" },
+          { valor: 45, texto: "45 minutos" },
+          { valor: 60, texto: "60 minutos" },
+        ], estudio.duracao_padrao || 30)),
+        campo("Repetir", entradaSelecao("repetir", [
+          { valor: 0, texto: "Não repetir" },
+          { valor: 4, texto: "Toda semana, 4 semanas" },
+          { valor: 8, texto: "Toda semana, 8 semanas" },
+          { valor: 12, texto: "Toda semana, 12 semanas" },
+        ], 0), "Repete o mesmo horário nas próximas semanas")
+      ])
     );
 
     const bt = el("button", { class: "bt bt--primario bt--cheio", type: "submit", texto: "Marcar" });
@@ -82,13 +90,13 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
 
       const ocupados = await ocupacaoNoHorario(inicio, duracao);
       if (ocupados >= Number(estudio.capacidade || 1)) {
-        aviso(`Esse horario ja esta cheio. O estudio atende ${estudio.capacidade} por vez.`, "erro");
+        aviso(`Esse horário já está cheio. O estúdio atende ${estudio.capacidade} por vez.`, "erro");
         return;
       }
 
       if (!aluno.saude_liberado) {
         const segue = await confirmar(
-          `${aluno.nome} ainda nao esta com a ficha de saude liberada. Marcar mesmo assim?`,
+          `${aluno.nome} ainda não está com a ficha de saúde liberada. Marcar mesmo assim?`,
           { rotuloOk: "Marcar assim mesmo" }
         );
         if (!segue) return;
@@ -100,7 +108,7 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
         const minimo = Number(estudio.intervalo_recuperacao || 0);
         if (minimo && horas < minimo) {
           const segue = await confirmar(
-            `A ultima sessao de ${aluno.nome} foi em ${dataBr(ultima.inicio)} as ${hora(ultima.inicio)}. O intervalo de recuperacao do estudio e de ${minimo} horas. Marcar mesmo assim?`,
+            `A última sessão de ${aluno.nome} foi em ${dataBr(ultima.inicio)} às ${hora(ultima.inicio)}. O intervalo de recuperação do estúdio é de ${minimo} horas. Marcar mesmo assim?`,
             { rotuloOk: "Marcar assim mesmo" }
           );
           if (!segue) return;
@@ -110,7 +118,23 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
       bt.disabled = true;
       try {
         await criarSessao({ aluno_id: aluno.id, inicio: inicio.toISOString(), duracao });
-        aviso("Sessao marcada.");
+
+        const repetir = Number(dados.repetir || 0);
+        let criadas = 1;
+        let cheias = 0;
+        for (let i = 1; i <= repetir; i++) {
+          const prox = somarDias(inicio, 7 * i);
+          const ocupadosProx = await ocupacaoNoHorario(prox, duracao);
+          if (ocupadosProx >= Number(estudio.capacidade || 1)) { cheias++; continue; }
+          await criarSessao({ aluno_id: aluno.id, inicio: prox.toISOString(), duracao });
+          criadas++;
+        }
+
+        if (repetir) {
+          aviso(`${criadas} sessões marcadas.` + (cheias ? ` ${cheias} semana${cheias > 1 ? "s" : ""} já estava${cheias > 1 ? "m" : ""} cheia${cheias > 1 ? "s" : ""}.` : ""));
+        } else {
+          aviso("Sessão marcada.");
+        }
         fechar();
         if (aoSalvar) aoSalvar();
       } catch (e) {
@@ -125,21 +149,21 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
 
 export function abrirAcoesSessao(sessao, aoMudar) {
   const aluno = sessao.aluno || {};
-  abrirFolha(aluno.nome || "Sessao", (corpo, fechar) => {
+  abrirFolha(aluno.nome || "Sessão", (corpo, fechar) => {
     const feito = async (status) => {
       await atualizarSessao(sessao.id, { status });
-      aviso(status === "realizada" ? "Presenca registrada." : status === "falta" ? "Falta registrada." : "Sessao cancelada.");
+      aviso(status === "realizada" ? "Presença registrada." : status === "falta" ? "Falta registrada." : "Sessão cancelada.");
       fechar();
       if (aoMudar) aoMudar();
     };
 
     corpo.appendChild(
-      el("p", { class: "obs", texto: `${dataBr(sessao.inicio)} as ${hora(sessao.inicio)}, ${sessao.duracao || 30} minutos` })
+      el("p", { class: "obs", texto: `${dataBr(sessao.inicio)} às ${hora(sessao.inicio)}, ${sessao.duracao || 30} minutos` })
     );
 
     corpo.appendChild(
       el("div", { class: "grade-acoes" }, [
-        botaoComIcone("certo", "Marcar presenca", () => feito("realizada"), "bt--linha"),
+        botaoComIcone("certo", "Marcar presença", () => feito("realizada"), "bt--linha"),
         botaoComIcone("errado", "Marcar falta", () => feito("falta"), "bt--linha"),
         botaoComIcone("whatsapp", "Lembrar no WhatsApp", () => abrirWhats(aluno.telefone, textoLembrete(aluno, sessao)), "bt--linha"),
         el("button", { class: "bt bt--linha", texto: "Ver ficha", onclick: () => { fechar(); abrirFicha(sessao.aluno_id, aoMudar); } }),
@@ -148,32 +172,71 @@ export function abrirAcoesSessao(sessao, aoMudar) {
 
     const form = el("form", { class: "form" });
     form.append(
-      campo("Intensidade e anotacoes do treino", entradaArea("intensidade", sessao.intensidade || "", 2), "Exemplo: nivel 6, pernas 7, sem queixa"),
-      el("button", { class: "bt bt--linha bt--peq", type: "submit", texto: "Salvar anotacao" })
+      campo("Intensidade e anotações do treino", entradaArea("intensidade", sessao.intensidade || "", 2), "Exemplo: nível 6, pernas 7, sem queixa"),
+      el("button", { class: "bt bt--linha bt--peq", type: "submit", texto: "Salvar anotação" })
     );
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const dados = lerFormulario(form);
       await atualizarSessao(sessao.id, { intensidade: dados.intensidade });
-      aviso("Anotacao salva.");
+      aviso("Anotação salva.");
       fechar();
       if (aoMudar) aoMudar();
     });
     corpo.appendChild(form);
 
     corpo.appendChild(
-      el("div", { class: "linha-botoes" }, [
+      el("div", { class: "linha-botoes linha-botoes--inicio" }, [
+        el("button", {
+          class: "bt bt--linha bt--peq", texto: "Reagendar",
+          onclick: () => { fechar(); abrirReagendar(sessao, aoMudar); },
+        }),
         el("button", {
           class: "bt bt--perigo bt--peq", texto: "Desmarcar",
           onclick: async () => {
-            if (!(await confirmar("Desmarcar esta sessao? Ela sai da agenda.", { rotuloOk: "Desmarcar", perigo: true }))) return;
+            if (!(await confirmar("Desmarcar esta sessão? Ela sai da agenda.", { rotuloOk: "Desmarcar", perigo: true }))) return;
             await removerSessao(sessao.id);
-            aviso("Sessao desmarcada.");
+            aviso("Sessão desmarcada.");
             fechar();
             if (aoMudar) aoMudar();
           },
         }),
       ])
     );
+  });
+}
+
+/* Muda o dia e a hora de uma sessao ja marcada */
+export function abrirReagendar(sessao, aoMudar) {
+  const estudio = estado.perfil.estudio;
+  const aluno = sessao.aluno || {};
+  abrirFolha("Reagendar", (corpo, fechar) => {
+    const atual = new Date(sessao.inicio);
+    const form = el("form", { class: "form" });
+    form.append(
+      el("p", { class: "obs", texto: `${aluno.nome || "Aluno"}, hoje em ${dataBr(sessao.inicio)} às ${hora(sessao.inicio)}` }),
+      el("div", { class: "form__par" }, [
+        campo("Novo dia", entradaTexto("dia", iso(atual), { type: "date", required: true })),
+        campo("Nova hora", entradaSelecao("hora", horariosPossiveis(estudio).map((h) => ({ valor: h, texto: h })),
+          `${String(atual.getHours()).padStart(2, "0")}:${String(atual.getMinutes()).padStart(2, "0")}`)),
+      ]),
+      el("button", { class: "bt bt--primario bt--cheio", type: "submit", texto: "Reagendar" })
+    );
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const dados = lerFormulario(form);
+      const novo = juntarDataHora(dados.dia, dados.hora);
+      const duracao = sessao.duracao || 30;
+      const ocupados = await ocupacaoNoHorario(novo, duracao, sessao.id);
+      if (ocupados >= Number(estudio.capacidade || 1)) {
+        aviso(`Esse horário já está cheio. O estúdio atende ${estudio.capacidade} por vez.`, "erro");
+        return;
+      }
+      await atualizarSessao(sessao.id, { inicio: novo.toISOString(), status: "agendada" });
+      aviso("Sessão reagendada.");
+      fechar();
+      if (aoMudar) aoMudar();
+    });
+    corpo.appendChild(form);
   });
 }

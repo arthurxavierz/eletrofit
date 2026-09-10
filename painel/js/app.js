@@ -65,13 +65,13 @@ function telaLogin() {
           el("span", { texto: "ELETRO" }),
           el("span", { class: "ouro", texto: "FIT" }),
         ]),
-        el("h1", { class: "login__titulo", texto: "Painel do estudio" }),
+        el("h1", { class: "login__titulo", texto: "Painel do estúdio" }),
         el("p", { class: "login__texto", texto: DEMO
-          ? "Modo demonstracao. Entre com qualquer e-mail e senha para conhecer o painel."
+          ? "Modo demonstração. Entre com qualquer e-mail e senha para conhecer o painel."
           : "Entre com o e-mail cadastrado no sistema." }),
         form,
       ]),
-      el("p", { class: "login__rodape", texto: "Eletrofit Estudio, Patrocinio MG" }),
+      el("p", { class: "login__rodape", texto: "Eletrofit Estúdio, Patrocínio MG" }),
     ])
   );
 
@@ -98,12 +98,12 @@ function montarEstrutura() {
           el("span", { texto: estado.perfil.nome }),
         ]),
       ]),
-      DEMO ? el("span", { class: "selo-demo", texto: "Demonstracao" }) : null,
+      DEMO ? el("span", { class: "selo-demo", texto: "Demonstração" }) : null,
       el("button", { class: "bt bt--linha bt--peq", texto: "Sair", onclick: async () => { await sair(); location.hash = ""; telaLogin(); } }),
     ]),
   ]);
 
-  const menu = el("nav", { class: "menu", "aria-label": "Secoes" },
+  const menu = el("nav", { class: "menu", "aria-label": "Seções" },
     TELAS.map((t) =>
       el("a", { class: "menu__item", href: "#" + t.id, "data-tela": t.id }, [
         el("span", { class: "menu__icone", html: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icone}"/></svg>` }),
@@ -139,7 +139,7 @@ export async function irPara(id) {
   } catch (e) {
     limpar(conteudo).appendChild(
       el("div", { class: "vazio" }, [
-        el("p", { texto: "Nao foi possivel carregar esta tela." }),
+        el("p", { texto: "Não foi possível carregar esta tela." }),
         el("p", { class: "vazio__detalhe", texto: e.message }),
       ])
     );

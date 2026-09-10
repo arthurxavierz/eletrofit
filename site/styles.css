@@ -539,6 +539,8 @@ ul,ol{list-style:none}
   display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
   font-size:.8rem;color:#7d7d84;
 }
+.foot__credito a{color:#b5b5ba;border-bottom:1px solid rgba(255,196,0,.5);transition:color .2s var(--ease)}
+.foot__credito a:hover{color:var(--gold-500)}
 
 /* ===================================================
    WHATSAPP FLUTUANTE

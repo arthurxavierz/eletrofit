@@ -28,7 +28,7 @@ export async function montar(raiz) {
       el("div", { class: "linha-botoes" }, [
         el("button", { class: "bt bt--linha bt--peq", texto: "Anterior", onclick: () => { semanaAtual = somarDias(semanaAtual, -7); montar(raiz); } }),
         el("button", { class: "bt bt--linha bt--peq", texto: "Hoje", onclick: () => { semanaAtual = inicioDaSemana(hoje()); montar(raiz); } }),
-        el("button", { class: "bt bt--linha bt--peq", texto: "Proxima", onclick: () => { semanaAtual = somarDias(semanaAtual, 7); montar(raiz); } }),
+        el("button", { class: "bt bt--linha bt--peq", texto: "Próxima", onclick: () => { semanaAtual = somarDias(semanaAtual, 7); montar(raiz); } }),
         el("button", { class: "bt bt--primario bt--peq", texto: "Marcar", onclick: () => abrirNovaSessao({ data: new Date(inicio) }, recarregar) }),
       ]),
     ])
@@ -84,6 +84,6 @@ export async function montar(raiz) {
   const feitas = sessoes.filter((s) => s.status === "realizada").length;
   const faltas = sessoes.filter((s) => s.status === "falta").length;
   raiz.appendChild(
-    el("p", { class: "obs obs--centro", texto: `${total} sessoes na semana, ${feitas} realizadas, ${faltas} faltas` })
+    el("p", { class: "obs obs--centro", texto: `${total} sessões na semana, ${feitas} realizadas, ${faltas} faltas` })
   );
 }

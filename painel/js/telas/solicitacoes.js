@@ -9,10 +9,10 @@ let aba = "nova";
 
 function quandoChegou(criado) {
   const horas = (new Date() - new Date(criado)) / 36e5;
-  if (horas < 1) return "agora ha pouco";
-  if (horas < 24) return `ha ${Math.floor(horas)} hora${Math.floor(horas) === 1 ? "" : "s"}`;
+  if (horas < 1) return "agora há pouco";
+  if (horas < 24) return `há ${Math.floor(horas)} hora${Math.floor(horas) === 1 ? "" : "s"}`;
   const dias = Math.floor(horas / 24);
-  if (dias < 7) return `ha ${dias} dia${dias === 1 ? "" : "s"}`;
+  if (dias < 7) return `há ${dias} dia${dias === 1 ? "" : "s"}`;
   return dataBr(criado);
 }
 
@@ -27,7 +27,7 @@ export async function montar(raiz) {
     el("div", { class: "tela__topo" }, [
       el("div", {}, [
         el("h1", { class: "tela__titulo", texto: "Pedidos" }),
-        el("p", { class: "tela__sub", texto: "Formulario do site e contatos anotados" }),
+        el("p", { class: "tela__sub", texto: "Formulário do site e contatos anotados" }),
       ]),
     ])
   );
@@ -42,8 +42,8 @@ export async function montar(raiz) {
   if (!lista.length) {
     raiz.appendChild(vazio(
       aba === "nova"
-        ? "Nenhum pedido novo. Quando alguem preencher o formulario do site, aparece aqui."
-        : "Nenhum pedido registrado ate agora."
+        ? "Nenhum pedido novo. Quando alguém preencher o formulário do site, aparece aqui."
+        : "Nenhum pedido registrado até agora."
     ));
     return;
   }
@@ -59,7 +59,7 @@ export async function montar(raiz) {
         el("p", { class: "obs", texto: `Chegou ${quandoChegou(s.criado_em)}` }),
         el("div", { class: "linha-botoes linha-botoes--inicio" }, [
           botaoComIcone("whatsapp", "Responder", () => abrirWhats(s.telefone,
-            `Oi ${primeiroNome(s.nome)}, aqui e da Eletrofit. Recebemos seu pedido de aula experimental. Qual dia dessa semana fica melhor para voce?`), "bt--linha bt--peq"),
+            `Oi ${primeiroNome(s.nome)}, aqui é da Eletrofit. Recebemos seu pedido de aula experimental. Qual dia dessa semana fica melhor para você?`), "bt--linha bt--peq"),
           s.status === "nova"
             ? el("button", {
                 class: "bt bt--primario bt--peq", texto: "Virar aluno",
@@ -68,7 +68,7 @@ export async function montar(raiz) {
                   if (!ok) return;
                   const aluno = await salvarAluno({
                     nome: s.nome, telefone: s.telefone, objetivo: s.objetivo || "",
-                    status: "experimental", observacoes: s.periodo ? "Prefere treinar no periodo: " + s.periodo : "",
+                    status: "experimental", observacoes: s.periodo ? "Prefere treinar no período: " + s.periodo : "",
                   });
                   await atualizarSolicitacao(s.id, { status: "atendida" });
                   aviso("Aluno cadastrado.");

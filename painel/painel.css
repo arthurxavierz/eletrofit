@@ -488,3 +488,17 @@ textarea.entrada{resize:vertical;min-height:62px}
 @media (prefers-reduced-motion:reduce){
   *{transition-duration:.001ms !important;animation-duration:.001ms !important}
 }
+
+/* etiqueta "hoje" no bloco de aniversariantes */
+.hoje-tag{
+  display:inline-block;font-size:.7rem;font-weight:600;letter-spacing:.02em;
+  color:#141310;background:var(--ouro);border-radius:999px;padding:.02rem .45rem;vertical-align:middle;
+}
+/* resumo por forma de pagamento */
+.formas{display:flex;flex-wrap:wrap;gap:.4rem;margin:-.3rem 0 1rem}
+.forma{
+  display:flex;align-items:baseline;gap:.35rem;
+  background:var(--paper);border:1px solid var(--line);border-radius:999px;
+  padding:.28rem .7rem;font-size:.82rem;color:var(--muted);
+}
+.forma strong{font-size:.9rem;font-weight:700;color:var(--ink)}
