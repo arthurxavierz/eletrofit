@@ -45,8 +45,10 @@ O passo a passo completo de publicação, do Supabase ao domínio, está em
 1. Crie o projeto no Supabase e rode os três arquivos de `painel/banco`.
 2. Crie o usuário da proprietária e ligue ao estúdio.
 3. Preencha `painel/config.js` e `site/config.js` com as chaves do Supabase.
-4. No Netlify, crie dois sites a partir deste repositório. Um publica a pasta
-   `site`, o outro publica a pasta `painel`. Nenhum dos dois tem comando de build.
+4. No Netlify, crie dois sites a partir deste repositório. O primeiro sobe com a
+   Base directory vazia (publica a pasta `site`). O segundo, com a Base directory
+   igual a `painel`. Os arquivos `netlify.toml` cuidam do resto. Nenhum dos dois
+   tem comando de build.
 5. Aponte o domínio no Cloudflare, com os registros em DNS only.
 
 O passo a passo detalhado está em [painel/README.md](painel/README.md).

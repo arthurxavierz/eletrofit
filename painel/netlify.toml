@@ -1,0 +1,21 @@
+# ===================================================
+# Painel de gestao da Eletrofit.
+#
+# Este arquivo vale para o segundo site do Netlify,
+# aquele criado com a Base directory definida como
+# painel. Ai o Netlify le este arquivo e publica a
+# propria pasta painel/. Nao existe etapa de build.
+#
+# O cabecalho abaixo reforca que o painel nunca deve
+# aparecer em busca do Google, por causa dos dados de
+# aluno e de saude.
+# ===================================================
+
+[build]
+  publish = "."
+  command = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

@@ -1,0 +1,13 @@
+# ===================================================
+# Site publico da Eletrofit.
+#
+# Este arquivo faz o Netlify publicar a pasta site/
+# deste repositorio, sem precisar configurar nada na
+# interface. Nao existe etapa de build.
+#
+# Para o painel de gestao, veja painel/netlify.toml.
+# ===================================================
+
+[build]
+  publish = "site"
+  command = ""

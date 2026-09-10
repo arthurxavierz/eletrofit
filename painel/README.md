@@ -126,23 +126,30 @@ Depois de preencher, salve, faça o commit e mande para o GitHub.
 
 ## Etapa 5. Publicar no Netlify
 
-São dois sites, saindo do mesmo repositório.
+São dois sites do Netlify, saindo do mesmo repositório. Um publica a pasta
+`site`, o outro publica a pasta `painel`. Os arquivos `netlify.toml` do
+repositório já dizem ao Netlify qual pasta é qual, então quase não há o que
+configurar na tela.
 
 **Site público**
 
 1. No Netlify, **Add new site**, **Import an existing project**, escolha o
-   repositório.
-2. Em **Publish directory**, escreva `site`.
-3. Deixe o campo de build vazio. Não tem build.
-4. Publique.
+   repositório `eletrofit`.
+2. Deixe a **Base directory** vazia e o campo de build vazio. O `netlify.toml`
+   da raiz já manda publicar a pasta `site`.
+3. Clique em **Deploy**. É esse site que recebe o domínio principal.
 
 **Painel**
 
-1. Repita o processo, criando um segundo site a partir do mesmo repositório.
-2. Em **Publish directory**, escreva `painel`.
-3. Publique.
+1. Repita **Add new site**, **Import an existing project**, e escolha o mesmo
+   repositório `eletrofit`.
+2. Aqui muda uma coisa só: em **Base directory**, escreva `painel`. Isso faz o
+   Netlify ler o `painel/netlify.toml` e publicar a pasta do painel.
+3. Deixe o campo de build vazio e clique em **Deploy**.
 
-Cada push no GitHub atualiza os dois sozinho.
+Se um site subir em branco ou com erro 404, quase sempre é a Base directory: o
+público fica vazia, o painel fica `painel`. Cada push no GitHub atualiza os dois
+sozinho.
 
 ## Etapa 6. Apontar o domínio no Cloudflare
 
