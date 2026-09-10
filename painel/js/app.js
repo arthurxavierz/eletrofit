@@ -58,14 +58,20 @@ function telaLogin() {
 
   app.appendChild(
     el("div", { class: "login" }, [
+      el("span", { class: "login__brilho", "aria-hidden": "true" }),
       el("div", { class: "login__caixa" }, [
-        el("img", { class: "login__marca", src: "img/eletrofit-logo.png", alt: "Eletrofit" }),
+        el("img", { class: "login__marca", src: "img/eletrofit-raio.png", alt: "Eletrofit" }),
+        el("div", { class: "login__marca-nome", "aria-hidden": "true" }, [
+          el("span", { texto: "ELETRO" }),
+          el("span", { class: "ouro", texto: "FIT" }),
+        ]),
         el("h1", { class: "login__titulo", texto: "Painel do estudio" }),
         el("p", { class: "login__texto", texto: DEMO
           ? "Modo demonstracao. Entre com qualquer e-mail e senha para conhecer o painel."
           : "Entre com o e-mail cadastrado no sistema." }),
         form,
       ]),
+      el("p", { class: "login__rodape", texto: "Eletrofit Estudio, Patrocinio MG" }),
     ])
   );
 
@@ -86,7 +92,7 @@ function montarEstrutura() {
   const barra = el("header", { class: "barra" }, [
     el("div", { class: "barra__interno" }, [
       el("div", { class: "barra__marca" }, [
-        el("img", { src: "img/eletrofit-logo.png", alt: "" }),
+        el("img", { src: "img/eletrofit-raio.png", alt: "" }),
         el("div", {}, [
           el("strong", { texto: nomeEstudio }),
           el("span", { texto: estado.perfil.nome }),

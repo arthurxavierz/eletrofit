@@ -141,10 +141,10 @@ ul,ol{list-style:none}
 }
 /* passou do topo: vira barra preta */
 .nav.solid{
-  background:var(--ink);
+  background:#000;
   padding:8px 0;
   border-bottom-color:rgba(255,255,255,.08);
-  box-shadow:0 10px 30px rgba(0,0,0,.28);
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
 }
 .nav__pill{
   max-width:var(--maxw);margin:0 auto;
@@ -153,10 +153,11 @@ ul,ol{list-style:none}
 }
 .brand{display:flex;align-items:center;margin-right:auto;flex-shrink:0}
 .brand img{
-  width:52px;height:52px;border-radius:50%;
+  width:46px;height:46px;object-fit:contain;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.45));
   transition:width .38s var(--ease),height .38s var(--ease);
 }
-.nav.solid .brand img{width:44px;height:44px}
+.nav.solid .brand img{width:40px;height:40px}
 .nav__links{display:flex;gap:1.9rem;margin-right:auto}
 .nav__links a{
   font-family:var(--font-cond);
@@ -186,7 +187,7 @@ ul,ol{list-style:none}
   display:none;flex-direction:column;
   width:calc(100% - 2rem);max-width:var(--maxw);
   margin:.6rem auto 0;padding:0 1.3rem;max-height:0;overflow:hidden;
-  background:rgba(15,15,16,.96);
+  background:rgba(0,0,0,.97);
   border:1px solid rgba(255,255,255,.1);
   border-radius:var(--radius);
   box-shadow:0 20px 44px rgba(0,0,0,.45);
@@ -204,13 +205,12 @@ ul,ol{list-style:none}
 /* ===================================================
    HERO
    =================================================== */
-.hero{padding:12px 12px 0}
+.hero{padding:0}
 .hero__frame{
   position:relative;overflow:hidden;
-  border-radius:var(--radius-lg);
-  min-height:min(94vh,900px);
+  min-height:100vh;min-height:100svh;
   display:flex;align-items:flex-end;
-  background:#0b0b0c;
+  background:#000;
   isolation:isolate;
 }
 .hero__img{
@@ -223,12 +223,12 @@ ul,ol{list-style:none}
   background:
     linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 24%),
     linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.3) 38%,rgba(0,0,0,0) 66%),
-    linear-gradient(0deg,rgba(0,0,0,.82) 2%,rgba(0,0,0,.3) 32%,rgba(0,0,0,0) 58%);
+    linear-gradient(0deg,#000 0%,rgba(0,0,0,.55) 24%,rgba(0,0,0,0) 56%);
 }
 .hero__body{
   position:relative;width:100%;
   display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;
-  padding:clamp(1.6rem,4vw,3.2rem);
+  padding:clamp(1.8rem,4vw,3.4rem) clamp(1.6rem,4vw,3.2rem) clamp(2.4rem,5vw,4rem);
 }
 .hero__copy{max-width:44ch;min-width:0}
 .hero__pin{
@@ -517,12 +517,12 @@ ul,ol{list-style:none}
 /* ===================================================
    FOOTER
    =================================================== */
-.foot{background:var(--ink);color:#d6d6d8}
+.foot{background:#000;color:#d6d6d8}
 .foot__inner{
   max-width:var(--maxw);margin:0 auto;padding:clamp(3rem,6vw,4.2rem) 1.5rem 2rem;
   display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:2.5rem;
 }
-.foot__brand img{width:76px;height:76px;border-radius:50%;margin-bottom:1rem}
+.foot__brand img{width:60px;height:60px;object-fit:contain;margin-bottom:1rem}
 .foot__brand p{color:#9a9a9f;font-size:.92rem;max-width:38ch}
 .foot__nav{display:flex;flex-direction:column;gap:.7rem}
 .foot__nav a,.foot__contact a,.foot__contact span{
@@ -598,8 +598,8 @@ html.js .reveal.in{opacity:1;transform:none}
   .brand{margin-right:0}
 }
 @media (max-width:620px){
-  .hero{padding:8px 8px 0}
-  .hero__frame{min-height:min(94vh,780px);border-radius:22px}
+  .hero{padding:0}
+  .hero__frame{min-height:100svh}
   .hero__frame::after{
     background:
       linear-gradient(180deg,rgba(0,0,0,.40) 0%,rgba(0,0,0,0) 22%),
