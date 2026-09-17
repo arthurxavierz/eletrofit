@@ -4,10 +4,11 @@
 import {
   obterAluno, salvarAluno, matriculaDoAluno, salvarMatricula, encerrarMatricula,
   listarPlanos, sessoesDoAluno, cobrancasDoAluno, salvarCobranca,
+  avaliacoesDoAluno, listarProtocolos,
 } from "../db.js";
 import {
   el, dataBr, hora, dinheiro, telefoneBonito, linkWhats, primeiroNome,
-  iniciais, idadeDe, iso, mesPorExtenso, primeiroDoMes,
+  iniciais, idadeDe, iso, mesPorExtenso,
 } from "../util.js";
 import {
   abrirFolha, campo, entradaTexto, entradaSelecao, entradaArea,
@@ -99,10 +100,12 @@ export async function abrirFicha(alunoId, aoMudar) {
   abrirFolha(aluno.nome, async (corpo, fechar) => {
     const recarregar = async () => { fechar(); await abrirFicha(alunoId, aoMudar); if (aoMudar) aoMudar(); };
 
-    const [matricula, planos, sessoes, cobrancas] = await Promise.all([
+    const [matricula, planos, sessoes, cobrancas, avaliacoes, protocolos] = await Promise.all([
       matriculaDoAluno(alunoId), listarPlanos({ apenasAtivos: true }),
       sessoesDoAluno(alunoId, 8), cobrancasDoAluno(alunoId, 6),
+      avaliacoesDoAluno(alunoId), listarProtocolos({}),
     ]);
+    const nomeProtocolo = (id) => (protocolos.find((t) => t.id === id) || {}).nome || "";
 
     const idade = idadeDe(aluno.nascimento);
 
@@ -193,7 +196,7 @@ export async function abrirFicha(alunoId, aoMudar) {
       ev.preventDefault();
       const dados = lerFormulario(formPlano);
       const plano = planos.find((p) => p.id === dados.plano_id);
-      if (!plano) { aviso("Cadastre um plano em Ajustes primeiro.", "erro"); return; }
+      if (!plano) { aviso("Cadastre um plano na tela Planos primeiro.", "erro"); return; }
       try {
         await salvarMatricula({
           aluno_id: aluno.id, plano_id: plano.id,
@@ -242,6 +245,41 @@ export async function abrirFicha(alunoId, aoMudar) {
     }
     corpo.appendChild(blocoCob);
 
+    /* avaliacoes */
+    const blocoAval = el("div", { class: "bloco" }, [
+      el("div", { class: "bloco__topo" }, [
+        el("h3", { class: "bloco__titulo", texto: "Avaliação física" }),
+        el("button", {
+          class: "bt bt--linha bt--peq", texto: avaliacoes.length ? "Ver evolução" : "Lançar primeira",
+          onclick: async () => {
+            const tela = await import("./avaliacoes.js");
+            fechar();
+            if (avaliacoes.length) tela.abrirHistorico(alunoId, aoMudar);
+            else tela.abrirFormularioAvaliacao(null, alunoId, aoMudar);
+          },
+        }),
+      ]),
+    ]);
+    if (!avaliacoes.length) {
+      blocoAval.appendChild(el("p", { class: "obs", texto: "Este aluno ainda não foi avaliado." }));
+    } else {
+      const ultima = avaliacoes[0];
+      const primeira = avaliacoes[avaliacoes.length - 1];
+      const dp = ultima.peso !== null && primeira.peso !== null ? +(Number(ultima.peso) - Number(primeira.peso)).toFixed(1) : null;
+      blocoAval.append(
+        el("div", { class: "ficha-cartao__dados" }, [
+          ultima.peso ? el("span", { class: "dado" }, [document.createTextNode("Peso"), el("strong", { texto: String(ultima.peso).replace(".", ",") + " kg" })]) : null,
+          ultima.gordura ? el("span", { class: "dado" }, [document.createTextNode("Gordura"), el("strong", { texto: String(ultima.gordura).replace(".", ",") + "%" })]) : null,
+          ultima.massa_magra ? el("span", { class: "dado" }, [document.createTextNode("Massa magra"), el("strong", { texto: String(ultima.massa_magra).replace(".", ",") + " kg" })]) : null,
+          ultima.cintura ? el("span", { class: "dado" }, [document.createTextNode("Cintura"), el("strong", { texto: String(ultima.cintura).replace(".", ",") + " cm" })]) : null,
+        ]),
+        el("p", { class: "obs", style: "margin-top:.5rem", texto:
+          `Medido em ${dataBr(ultima.data)}, ${avaliacoes.length} ${avaliacoes.length === 1 ? "avaliação registrada" : "avaliações registradas"}.` +
+          (dp !== null && dp !== 0 ? ` Desde a primeira, ${dp > 0 ? "ganhou" : "perdeu"} ${String(Math.abs(dp)).replace(".", ",")} kg.` : "") })
+      );
+    }
+    corpo.appendChild(blocoAval);
+
     /* historico */
     const blocoHist = el("div", { class: "bloco" }, [el("h3", { class: "bloco__titulo", texto: "Últimas sessões" })]);
     if (!sessoes.length) {
@@ -252,7 +290,7 @@ export async function abrirFicha(alunoId, aoMudar) {
           el("li", {}, [
             el("div", {}, [
               el("strong", { texto: `${dataBr(s.inicio)} às ${hora(s.inicio)}` }),
-              el("span", { texto: s.intensidade || "Sem anotação de intensidade" }),
+              el("span", { texto: [nomeProtocolo(s.protocolo_id), s.intensidade].filter(Boolean).join("  ·  ") || "Sem anotação de intensidade" }),
             ]),
             etiqueta(
               s.status === "realizada" ? "Feita" : s.status === "falta" ? "Falta" : s.status === "cancelada" ? "Cancelada" : "Agendada",

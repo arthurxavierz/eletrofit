@@ -79,7 +79,7 @@ export async function montar(raiz) {
             : null,
           s.status === "nova"
             ? el("button", {
-                class: "bt bt--linha bt--peq", texto: "Ja atendi",
+                class: "bt bt--linha bt--peq", texto: "Já atendi",
                 onclick: async () => { await atualizarSolicitacao(s.id, { status: "atendida" }); aviso("Pedido marcado como atendido."); montar(raiz); },
               })
             : null,

@@ -2,16 +2,9 @@
 
 import { resumo, atualizarSessao } from "../db.js";
 import { el, limpar, hora, dinheiro, dataBr, primeiroNome, iniciais, DIAS } from "../util.js";
-import { aviso, etiqueta, vazio, botaoIcone, botaoComIcone, icone } from "../ui.js";
+import { aviso, etiqueta, vazio, botaoIcone, botaoComIcone, cartaoNumero } from "../ui.js";
 import { abrirFicha, abrirWhats, textoCobranca } from "./ficha.js";
 import { abrirNovaSessao, abrirAcoesSessao } from "./sessao.js";
-
-function cartaoNumero(valor, rotulo, tom = "") {
-  return el("div", { class: "numero " + (tom ? "numero--" + tom : "") }, [
-    el("strong", { texto: String(valor) }),
-    el("span", { texto: rotulo }),
-  ]);
-}
 
 export async function montar(raiz) {
   const dados = await resumo();
@@ -31,12 +24,18 @@ export async function montar(raiz) {
   );
 
   /* numeros */
+  const marcadas = dados.sessoesHoje.filter((s) => s.status !== "cancelada");
+  const pendentes = marcadas.filter((s) => s.status === "agendada").length;
+
   raiz.appendChild(
-    el("div", { class: "numeros" }, [
-      cartaoNumero(dados.sessoesHoje.filter((s) => s.status !== "cancelada").length, "sessões hoje"),
-      cartaoNumero(dados.ativos, "alunos ativos"),
-      cartaoNumero(dinheiro(dados.aReceber), "a receber no mês"),
-      cartaoNumero(dados.atrasadas.length, "mensalidades atrasadas", dados.atrasadas.length ? "alerta" : ""),
+    el("div", { class: "cartoes" }, [
+      cartaoNumero({ rotulo: "Sessões hoje", valor: String(marcadas.length), icone: "calendario",
+        nota: pendentes ? `${pendentes} sem registro` : "tudo registrado" }),
+      cartaoNumero({ rotulo: "Alunos ativos", valor: String(dados.ativos), icone: "pessoas",
+        nota: dados.experimentais ? `${dados.experimentais} experimentais` : "" }),
+      cartaoNumero({ rotulo: "A receber no mês", valor: dinheiro(dados.aReceber), icone: "dinheiro" }),
+      cartaoNumero({ rotulo: "Mensalidades atrasadas", valor: String(dados.atrasadas.length), icone: "sino",
+        tom: dados.atrasadas.length ? "alerta" : "" }),
     ])
   );
 

@@ -29,7 +29,7 @@ site/
     ├── fachada-hero-mobile.jpg   Foto de topo, recorte vertical do celular
     ├── fachada-entrada.jpg       Fachada na seção do estúdio
     ├── fachada-lateral.jpg       Fachada na seção do estúdio
-    ├── eletrofit-logo.png        Logotipo em círculo, fundo transparente
+    ├── eletrofit-raio.png        O raio da marca, fundo transparente
     └── og-eletrofit.jpg          Imagem de compartilhamento (WhatsApp, redes)
 ```
 
@@ -61,7 +61,8 @@ DNS e envie os arquivos da pasta como estão.
 | Método | Quatro passos, da avaliação ao acompanhamento |
 | Benefícios | Seis ganhos da eletroestimulação, em uma linha cada |
 | Estúdio | Fotos da fachada e três pontos sobre a estrutura |
-| Dúvidas | Quatro perguntas, incluindo contraindicações |
+| Planos | Três frequências de treino, 1x, 2x e 3x na semana, com o que cada uma inclui |
+| Dúvidas | Oito perguntas, incluindo contraindicações e tempo de resultado |
 | Agendar | Formulário que monta a mensagem e abre o WhatsApp |
 | Contato | Telefone, Instagram, horário e mapa |
 
@@ -121,3 +122,12 @@ cliente:
 - Valores e planos. A página leva para o WhatsApp em vez de mostrar tabela.
 - Atendimento aos sábados. O horário publicado cobre segunda a sexta.
 - Nome e registro do profissional responsável, caso queiram assinar a página.
+
+---
+
+## Onde colocar os valores dos planos
+
+A seção **Planos** mostra `Sob consulta` nos três cartões. Para publicar o preço
+de verdade, abra o `index.html`, procure por `plano__valor` e troque o texto de
+cada um. São três linhas, nada além disso. Os mesmos valores devem ser
+cadastrados na tela **Planos** do painel, para a mensalidade sair certa.

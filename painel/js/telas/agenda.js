@@ -1,8 +1,7 @@
 /* Agenda da semana */
 
 import { sessoesEntre } from "../db.js";
-import { el, limpar, hora, iso, dataCurta, somarDias, inicioDaSemana, hoje, DIAS_CURTO, iniciais } from "../util.js";
-import { etiqueta } from "../ui.js";
+import { el, limpar, hora, iso, dataCurta, somarDias, inicioDaSemana, hoje, DIAS_CURTO } from "../util.js";
 import { estado } from "../estado.js";
 import { abrirNovaSessao, abrirAcoesSessao } from "./sessao.js";
 
@@ -48,6 +47,7 @@ export async function montar(raiz) {
       el("div", { class: "semana__topo" }, [
         el("strong", { texto: DIAS_CURTO[dia.getDay()] }),
         el("span", { texto: dataCurta(dia) }),
+        el("span", { class: "semana__carga", texto: doDia.length ? doDia.length + (doDia.length === 1 ? " sessão" : " sessões") : "" }),
       ]),
     ]);
 
@@ -83,7 +83,18 @@ export async function montar(raiz) {
   const total = sessoes.filter((s) => s.status !== "cancelada").length;
   const feitas = sessoes.filter((s) => s.status === "realizada").length;
   const faltas = sessoes.filter((s) => s.status === "falta").length;
+
+  /* quantas vagas o estúdio tem na semana, contando capacidade e horário */
+  const [ha, ma] = String(estudio.abre || "07:00").split(":").map(Number);
+  const [hf, mf] = String(estudio.fecha || "20:30").split(":").map(Number);
+  const duracao = Number(estudio.duracao_padrao || 30);
+  const janelasPorDia = Math.max(Math.floor(((hf * 60 + mf) - (ha * 60 + ma)) / duracao), 0);
+  const vagas = janelasPorDia * dias.length * Number(estudio.capacidade || 1);
+  const ocupacao = vagas ? Math.round((total / vagas) * 100) : 0;
+
   raiz.appendChild(
-    el("p", { class: "obs obs--centro", texto: `${total} sessões na semana, ${feitas} realizadas, ${faltas} faltas` })
+    el("p", { class: "obs obs--centro", texto:
+      `${total} ${total === 1 ? "sessão" : "sessões"} na semana, ${feitas} ${feitas === 1 ? "realizada" : "realizadas"}, ${faltas} ${faltas === 1 ? "falta" : "faltas"}. ` +
+      `A agenda está com ${ocupacao}% das vagas ocupadas.` })
   );
 }

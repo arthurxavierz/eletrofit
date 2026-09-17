@@ -1,16 +1,22 @@
 # Painel Eletrofit
 
-Sistema de gestão do estúdio: agenda, alunos, ficha de saúde, planos,
-mensalidades e os pedidos que chegam pelo site.
+Sistema de gestão do estúdio: painel de números, agenda, alunos, ficha de
+saúde, avaliação física, protocolos de treino, planos, mensalidades,
+comunicação por WhatsApp, relatórios e os pedidos que chegam pelo site.
 
 Feito em HTML, CSS e JavaScript puros. Não tem build, não tem framework e não
 precisa de servidor próprio. É a mesma lógica do site: publicar a pasta já
 coloca no ar. O banco de dados é o Supabase.
 
-O visual é propositalmente quieto: fundo claro, texto preto, linhas finas. O
-ouro da marca aparece só para marcar o que está selecionado, e verde e vermelho
-só quando significam alguma coisa, como pago, atrasado e falta. A barra preta
-no topo é o que amarra o painel ao site.
+O visual é escuro, como a marca: fundo preto, texto claro, linhas finas. O ouro
+da Eletrofit marca o que está selecionado e pinta os gráficos. Verde e vermelho
+só quando significam alguma coisa, como pago, atrasado e falta, e sempre com a
+palavra do lado, nunca só a cor.
+
+Os gráficos são desenhados à mão em SVG, sem biblioteca externa. Usam um tom só,
+do ouro claro ao ouro escuro, para nunca depender de o leitor distinguir cores
+parecidas. Todo gráfico tem um botão **Ver números** que abre a mesma informação
+em tabela.
 
 Quem entra no painel é a proprietária e a equipe. O aluno não tem login, ele é
 apenas um cadastro. Isso deixa o sistema mais simples e mais seguro.
@@ -28,17 +34,36 @@ painel/
 ├── banco/
 │   ├── 01_tabelas.sql        As tabelas
 │   ├── 02_permissoes.sql     Quem pode ver o quê
-│   └── 03_primeiro_acesso.sql Cria o estúdio e liga o seu usuário
+│   ├── 03_primeiro_acesso.sql Cria o estúdio e liga o seu usuário
+│   └── 04_novas_tabelas.sql  Protocolos, avaliações, mensagens e metas
 ├── img/
-│   └── eletrofit-logo.png
+│   └── eletrofit-raio.png
 └── js/
-    ├── app.js       Login e troca de tela
+    ├── app.js       Entrada e troca de tela
     ├── db.js        Todo o acesso aos dados
     ├── estado.js    Guarda quem está logado
+    ├── graficos.js  Os gráficos em SVG
     ├── ui.js        Botões, formulários e janelas
     ├── util.js      Datas, dinheiro, telefone
-    └── telas/       Uma pasta por tela do sistema
+    └── telas/       Um arquivo por tela do sistema
 ```
+
+## As telas
+
+| Tela | Para que serve |
+| --- | --- |
+| **Painel** | Números do mês, evolução de alunos, repartição por plano, mensalidades mês a mês, horários mais procurados, metas, agenda do dia e o que precisa de atenção. |
+| **Hoje** | A operação do dia. Marca presença e falta na hora. |
+| **Agenda** | A semana inteira, com a ocupação das vagas. |
+| **Alunos** | Cadastro, busca, filtro por situação e ordenação. Mostra há quantos dias cada um não treina. |
+| **Avaliações** | Peso, gordura, massa magra e medidas, com a evolução em gráfico. |
+| **Treinos** | Os protocolos de eletroestimulação: frequência, largura de pulso, nível e como aplicar. |
+| **Financeiro** | Mensalidades do mês, atrasos, baixa de pagamento e os últimos seis meses em gráfico. |
+| **Planos** | O que o estúdio vende, quantos alunos em cada plano e de onde vem o faturamento. |
+| **Pedidos** | Quem preencheu o formulário do site. Vira aluno com um clique. |
+| **Comunicação** | Listas prontas de quem precisa receber mensagem e os textos padrão do estúdio. |
+| **Relatórios** | Fechamento de três, seis ou doze meses: dinheiro, entradas, saídas, presença e quem mais falta. |
+| **Ajustes** | Horário, capacidade, intervalo de recuperação e metas do mês. |
 
 ## Modo demonstração
 
@@ -76,7 +101,8 @@ São seis etapas. Do começo ao fim leva perto de uma hora na primeira vez.
 2. Abra o arquivo `banco/01_tabelas.sql` deste repositório, copie tudo, cole no
    editor e clique em Run.
 3. Faça o mesmo com o `banco/02_permissoes.sql`.
-4. Ainda não rode o arquivo 03. Ele é a próxima etapa.
+4. Ainda não rode os arquivos 03 e 04. Eles são a próxima etapa, e a ordem
+   importa: o 04 só funciona depois que o estúdio existir.
 
 Se aparecer erro, leia a mensagem: quase sempre é um arquivo rodado fora de
 ordem. Rodar de novo o mesmo arquivo não faz mal, ele foi escrito para isso.
@@ -92,6 +118,10 @@ ordem. Rodar de novo o mesmo arquivo não faz mal, ele foi escrito para isso.
    troque o nome se quiser, e clique em Run.
 5. Na resposta vai aparecer uma linha com o **ID do estúdio**. Copie esse
    código, você usa na próxima etapa. Se perder, rode `select id, nome from estudios;`.
+6. Agora sim, abra o arquivo `banco/04_novas_tabelas.sql`, cole no editor e
+   clique em Run. Ele cria as tabelas de protocolos de treino, avaliações
+   físicas e modelos de mensagem, liga as metas do mês e já deixa cinco
+   protocolos e seis mensagens prontos no estúdio que você acabou de criar.
 
 ## Etapa 4. Preencher os dois arquivos de configuração
 
@@ -170,24 +200,35 @@ Pronto. O sistema está no ar.
 
 1. Entre no painel e vá em **Ajustes**. Confira quantos alunos o estúdio atende
    ao mesmo tempo, a duração da sessão, o intervalo de recuperação, o horário e
-   os dias de atendimento.
-2. Ainda em Ajustes, cadastre os planos com os valores reais.
-3. Vá em **Alunos** e cadastre quem já treina. Para cada um, abra a ficha,
+   os dias de atendimento. Aproveite e defina as metas do mês, elas viram barra
+   de progresso no Painel.
+2. Vá em **Planos** e cadastre os planos com os valores reais.
+3. Vá em **Treinos** e confira os protocolos que já vieram prontos. Ajuste
+   frequência, largura de pulso e descrição para o jeito do seu estúdio.
+4. Vá em **Alunos** e cadastre quem já treina. Para cada um, abra a ficha,
    preencha a saúde e defina o plano com o dia de vencimento.
-4. Vá em **Financeiro** e clique em **Gerar mensalidades**. O sistema cria a
+5. Vá em **Avaliações** e lance a medição de entrada de cada aluno. Sem a
+   primeira medição não existe evolução para mostrar depois.
+6. Vá em **Financeiro** e clique em **Gerar mensalidades**. O sistema cria a
    cobrança do mês para todo mundo que tem plano ativo. Pode clicar de novo sem
    medo, ele não duplica.
-5. Vá em **Agenda** e marque os treinos da semana.
+7. Vá em **Agenda** e marque os treinos da semana.
+8. Passe em **Comunicação** e leia os modelos de mensagem. Mude o texto para a
+   sua voz antes de começar a usar.
 
 ## A rotina depois disso
 
 - **Todo dia**, abra a tela **Hoje**. Ela mostra quem vem, quem está em atraso e
-  quantos pedidos novos chegaram do site. Marque presença ou falta na hora.
-- **Toda semana**, olhe o **Financeiro**. Quem está em atraso tem um botão de
-  cobrar que abre o WhatsApp com a mensagem já escrita.
-- **Todo começo de mês**, clique em **Gerar mensalidades**.
-- **Quando chegar um pedido pelo site**, ele aparece em **Pedidos**. Dali dá
-  para responder no WhatsApp e transformar em aluno com um clique.
+  quantos pedidos novos chegaram do site. Marque presença ou falta na hora, e
+  anote o protocolo aplicado.
+- **Toda semana**, abra o **Painel** e olhe as listas de baixo: alunos sumidos,
+  para cobrar e pedidos sem resposta. Depois passe em **Comunicação**, que junta
+  todas essas listas com a mensagem pronta.
+- **Todo começo de mês**, clique em **Gerar mensalidades** no Financeiro.
+- **A cada dois meses**, lance uma nova medição em **Avaliações**. É o que
+  transforma "acho que melhorei" em número.
+- **No fechamento do mês**, abra **Relatórios**. Ali estão entradas, saídas,
+  presença, quem mais treina e quem mais falta.
 
 ---
 

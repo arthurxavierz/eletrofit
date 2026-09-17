@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script>document.documentElement.className+=" js";</script>
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 <link rel="icon" type="image/png" href="favicon.png?v=1">
 <link rel="apple-touch-icon" href="favicon.png?v=1">
 <script type="application/ld+json">
@@ -61,6 +61,7 @@
       <a href="#metodo">Método</a>
       <a href="#beneficios">Benefícios</a>
       <a href="#estudio">Estúdio</a>
+      <a href="#planos">Planos</a>
       <a href="#duvidas">Dúvidas</a>
       <a href="#localizacao">Contato</a>
     </nav>
@@ -76,6 +77,7 @@
     <a href="#metodo">Método</a>
     <a href="#beneficios">Benefícios</a>
     <a href="#estudio">Estúdio</a>
+    <a href="#planos">Planos</a>
     <a href="#duvidas">Dúvidas</a>
     <a href="#localizacao">Contato</a>
     <a class="btn btn--primary" href="#agendar">Agendar aula experimental</a>
@@ -249,6 +251,73 @@
   </div>
 </section>
 
+
+<!-- ================= PLANOS =================
+     Os valores ficam no atributo data-valor e no texto
+     de cada plano. Para publicar o preco de verdade,
+     troque "Sob consulta" pelo valor combinado.
+     ============================================== -->
+<section class="planos" id="planos">
+  <div class="planos__head reveal">
+    <span class="eyebrow">Planos</span>
+    <h2 class="section-title">Quantas vezes <em>na semana</em></h2>
+    <p class="lead">A eletroestimulação pede intervalo de recuperação entre os treinos. A frequência certa sai da avaliação, com o seu objetivo e a sua rotina na mesa.</p>
+  </div>
+
+  <div class="planos__grid js-stagger">
+    <article class="plano reveal">
+      <header class="plano__topo">
+        <span class="plano__vezes">1x</span>
+        <span class="plano__semana">na semana</span>
+      </header>
+      <p class="plano__quem">Para quem está voltando a treinar, quer manter o que já conquistou ou tem a agenda apertada.</p>
+      <ul class="plano__itens">
+        <li>Uma sessão guiada por semana</li>
+        <li>Avaliação física de entrada</li>
+        <li>Protocolo ajustado ao seu objetivo</li>
+        <li>Acompanhamento pelo WhatsApp</li>
+      </ul>
+      <p class="plano__valor">Sob consulta</p>
+      <a class="btn btn--ghost btn--cheio" href="https://wa.me/5534991208519?text=Ol%C3%A1%21%20Quero%20saber%20sobre%20o%20plano%20de%201x%20na%20semana%20na%20Eletrofit." target="_blank" rel="noopener">Falar sobre este plano</a>
+    </article>
+
+    <article class="plano plano--destaque reveal">
+      <span class="plano__selo">Mais escolhido</span>
+      <header class="plano__topo">
+        <span class="plano__vezes">2x</span>
+        <span class="plano__semana">na semana</span>
+      </header>
+      <p class="plano__quem">Para emagrecimento e ganho de força com rotina constante. É a frequência que a maioria dos alunos segue.</p>
+      <ul class="plano__itens">
+        <li>Duas sessões guiadas por semana</li>
+        <li>Avaliação física para medir a evolução</li>
+        <li>Protocolo trocado conforme o corpo responde</li>
+        <li>Acompanhamento pelo WhatsApp</li>
+      </ul>
+      <p class="plano__valor">Sob consulta</p>
+      <a class="btn btn--primary btn--cheio" href="https://wa.me/5534991208519?text=Ol%C3%A1%21%20Quero%20saber%20sobre%20o%20plano%20de%202x%20na%20semana%20na%20Eletrofit." target="_blank" rel="noopener">Falar sobre este plano</a>
+    </article>
+
+    <article class="plano reveal">
+      <header class="plano__topo">
+        <span class="plano__vezes">3x</span>
+        <span class="plano__semana">na semana</span>
+      </header>
+      <p class="plano__quem">Para quem tem meta de prazo curto, já treina há tempo ou está em processo de reabilitação acompanhada.</p>
+      <ul class="plano__itens">
+        <li>Três sessões guiadas por semana</li>
+        <li>Avaliação física para medir a evolução</li>
+        <li>Protocolo dividido por grupo muscular</li>
+        <li>Acompanhamento pelo WhatsApp</li>
+      </ul>
+      <p class="plano__valor">Sob consulta</p>
+      <a class="btn btn--ghost btn--cheio" href="https://wa.me/5534991208519?text=Ol%C3%A1%21%20Quero%20saber%20sobre%20o%20plano%20de%203x%20na%20semana%20na%20Eletrofit." target="_blank" rel="noopener">Falar sobre este plano</a>
+    </article>
+  </div>
+
+  <p class="planos__nota reveal">A aula experimental é gratuita e não tem compromisso. O plano só entra na conversa depois que você sentir o treino.</p>
+</section>
+
 <!-- ================= CHAMADA ================= -->
 <section class="cta">
   <div class="cta__inner reveal">
@@ -285,6 +354,27 @@
       <summary>O que preciso levar?</summary>
       <p>Roupa de treino, tênis e água. O colete e o restante do equipamento são do estúdio.</p>
     </details>
+
+    <details class="qa reveal">
+      <summary>Quanto tempo dura a sessão?</summary>
+      <p>O estímulo em si é curto. Some o tempo de vestir o colete, aquecer e alongar no fim e reserve cerca de quarenta minutos no estúdio.</p>
+    </details>
+
+    <details class="qa reveal">
+      <summary>Preciso já treinar para começar?</summary>
+      <p>Não. Quem nunca treinou começa pelo protocolo de adaptação, com intensidade baixa e movimentos simples, e sobe a carga só quando o corpo responde.</p>
+    </details>
+
+    <details class="qa reveal">
+      <summary>Em quanto tempo aparece resultado?</summary>
+      <p>Depende do ponto de partida, da frequência e do que você come e dorme fora daqui. Por isso medimos peso, gordura e circunferências na entrada e repetimos a medição, para a conversa ser com número e não com impressão.</p>
+    </details>
+
+    <details class="qa reveal">
+      <summary>Tenho dor na lombar, posso fazer?</summary>
+      <p>Na maioria dos casos sim, e o estímulo na musculatura profunda do tronco costuma ajudar. O caminho é o mesmo de sempre: histórico de saúde primeiro, liberação quando o caso pedir, intensidade ajustada depois.</p>
+    </details>
+
   </div>
 </section>
 
@@ -405,6 +495,7 @@
       <a href="#metodo">Método</a>
       <a href="#beneficios">Benefícios</a>
       <a href="#estudio">Estúdio</a>
+      <a href="#planos">Planos</a>
       <a href="#duvidas">Dúvidas</a>
       <a href="#agendar">Agendar</a>
     </nav>
@@ -427,6 +518,6 @@
 </a>
 
 <script src="config.js?v=1"></script>
-<script src="script.js?v=4" defer></script>
+<script src="script.js?v=5" defer></script>
 </body>
 </html>

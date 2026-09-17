@@ -3,7 +3,7 @@
 
 import {
   listarAlunos, criarSessao, atualizarSessao, removerSessao,
-  sessoesEntre, ultimaSessaoDoAluno, obterAluno,
+  sessoesEntre, ultimaSessaoDoAluno, obterAluno, listarProtocolos,
 } from "../db.js";
 import { el, iso, hora, dataBr, somarDias } from "../util.js";
 import { abrirFolha, campo, entradaTexto, entradaSelecao, entradaArea, lerFormulario, aviso, confirmar, botaoComIcone } from "../ui.js";
@@ -49,7 +49,10 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
   const estudio = estado.perfil.estudio;
 
   abrirFolha("Marcar sessão", async (corpo, fechar) => {
-    const alunos = (await listarAlunos({})).filter((a) => a.status !== "inativo");
+    const [alunos, protocolos] = await Promise.all([
+      listarAlunos({}).then((l) => l.filter((a) => a.status !== "inativo")),
+      listarProtocolos({ apenasAtivos: true }),
+    ]);
     if (!alunos.length) {
       corpo.appendChild(el("p", { class: "obs", texto: "Cadastre um aluno antes de marcar a primeira sessão." }));
       return;
@@ -62,6 +65,8 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
         campo("Dia", entradaTexto("dia", iso(data || new Date()), { type: "date", required: true })),
         campo("Hora", entradaSelecao("hora", horariosPossiveis(estudio).map((h) => ({ valor: h, texto: h })), horaInicial || "18:00")),
       ]),
+      campo("Protocolo de treino", entradaSelecao("protocolo_id",
+        [{ valor: "", texto: "Decidir na hora" }].concat(protocolos.map((t) => ({ valor: t.id, texto: `${t.nome}  ·  ${t.foco}` }))), "")),
       el("div", { class: "form__par" }, [
         campo("Duração", entradaSelecao("duracao", [
           { valor: 20, texto: "20 minutos" },
@@ -117,7 +122,8 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
 
       bt.disabled = true;
       try {
-        await criarSessao({ aluno_id: aluno.id, inicio: inicio.toISOString(), duracao });
+        const protocolo_id = dados.protocolo_id || null;
+        await criarSessao({ aluno_id: aluno.id, inicio: inicio.toISOString(), duracao, protocolo_id });
 
         const repetir = Number(dados.repetir || 0);
         let criadas = 1;
@@ -126,7 +132,7 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
           const prox = somarDias(inicio, 7 * i);
           const ocupadosProx = await ocupacaoNoHorario(prox, duracao);
           if (ocupadosProx >= Number(estudio.capacidade || 1)) { cheias++; continue; }
-          await criarSessao({ aluno_id: aluno.id, inicio: prox.toISOString(), duracao });
+          await criarSessao({ aluno_id: aluno.id, inicio: prox.toISOString(), duracao, protocolo_id });
           criadas++;
         }
 
@@ -149,7 +155,8 @@ export function abrirNovaSessao({ data = null, horaInicial = "", alunoId = "" } 
 
 export function abrirAcoesSessao(sessao, aoMudar) {
   const aluno = sessao.aluno || {};
-  abrirFolha(aluno.nome || "Sessão", (corpo, fechar) => {
+  abrirFolha(aluno.nome || "Sessão", async (corpo, fechar) => {
+    const protocolos = await listarProtocolos({ apenasAtivos: true });
     const feito = async (status) => {
       await atualizarSessao(sessao.id, { status });
       aviso(status === "realizada" ? "Presença registrada." : status === "falta" ? "Falta registrada." : "Sessão cancelada.");
@@ -172,13 +179,16 @@ export function abrirAcoesSessao(sessao, aoMudar) {
 
     const form = el("form", { class: "form" });
     form.append(
+      campo("Protocolo aplicado", entradaSelecao("protocolo_id",
+        [{ valor: "", texto: "Sem protocolo definido" }].concat(protocolos.map((t) => ({ valor: t.id, texto: `${t.nome}  ·  ${t.foco}` }))),
+        sessao.protocolo_id || "")),
       campo("Intensidade e anotações do treino", entradaArea("intensidade", sessao.intensidade || "", 2), "Exemplo: nível 6, pernas 7, sem queixa"),
       el("button", { class: "bt bt--linha bt--peq", type: "submit", texto: "Salvar anotação" })
     );
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const dados = lerFormulario(form);
-      await atualizarSessao(sessao.id, { intensidade: dados.intensidade });
+      await atualizarSessao(sessao.id, { intensidade: dados.intensidade, protocolo_id: dados.protocolo_id || null });
       aviso("Anotação salva.");
       fechar();
       if (aoMudar) aoMudar();

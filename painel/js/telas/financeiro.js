@@ -1,18 +1,19 @@
 /* Mensalidades: o que entrou, o que falta e o que atrasou */
 
-import { cobrancasDoMes, cobrancasEmAberto, gerarCobrancasDoMes, salvarCobranca } from "../db.js";
-import { el, limpar, dinheiro, dataBr, iso, primeiroDoMes, somarMeses, mesPorExtenso, hoje } from "../util.js";
-import { aviso, etiqueta, vazio, confirmar, abrirFolha, campo, entradaSelecao, lerFormulario, botaoComIcone } from "../ui.js";
+import { cobrancasDoMes, cobrancasEmAberto, gerarCobrancasDoMes, salvarCobranca, cobrancasDesde, listarMatriculas } from "../db.js";
+import { el, limpar, dinheiro, dataBr, iso, primeiroDoMes, somarMeses, mesPorExtenso, hoje, MESES } from "../util.js";
+import { aviso, etiqueta, vazio, confirmar, abrirFolha, campo, entradaSelecao, lerFormulario, botaoComIcone, cartaoNumero } from "../ui.js";
+import { graficoBarras, OURO } from "../graficos.js";
 import { abrirFicha, abrirWhats, textoCobranca } from "./ficha.js";
 
 let mes = null;
 let aba = "mes";
 
-function cartaoNumero(valor, rotulo, tom = "") {
-  return el("div", { class: "numero " + (tom ? "numero--" + tom : "") }, [
-    el("strong", { texto: String(valor) }),
-    el("span", { texto: rotulo }),
-  ]);
+function reais(v, curto) {
+  const n = Number(v) || 0;
+  if (!curto) return dinheiro(n);
+  if (n >= 1000) return "R$ " + (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".", ",") + " mil";
+  return "R$ " + Math.round(n);
 }
 
 function linhaCobranca(c, recarregar) {
@@ -79,7 +80,10 @@ export async function montar(raiz) {
   if (!mes) mes = primeiroDoMes(hoje());
   const recarregar = () => montar(raiz);
 
-  const [doMes, abertas] = await Promise.all([cobrancasDoMes(mes), cobrancasEmAberto()]);
+  const seisMeses = primeiroDoMes(somarMeses(hoje(), -5));
+  const [doMes, abertas, ultimos, matriculas] = await Promise.all([
+    cobrancasDoMes(mes), cobrancasEmAberto(), cobrancasDesde(iso(seisMeses)), listarMatriculas(),
+  ]);
   const hojeIso = iso(hoje());
   const atrasadas = abertas.filter((c) => c.vencimento < hojeIso);
 
@@ -112,14 +116,41 @@ export async function montar(raiz) {
     ])
   );
 
+  const previsto = matriculas.filter((m) => m.status === "ativa").reduce((s, m) => s + Number(m.valor), 0);
+
   raiz.appendChild(
-    el("div", { class: "numeros" }, [
-      cartaoNumero(dinheiro(recebido), "recebido no mês", "ok"),
-      cartaoNumero(dinheiro(aReceber), "a receber no mês"),
-      cartaoNumero(dinheiro(totalAtrasado), "em atraso", totalAtrasado ? "alerta" : ""),
-      cartaoNumero(atrasadas.length, "alunos em atraso", atrasadas.length ? "alerta" : ""),
+    el("div", { class: "cartoes" }, [
+      cartaoNumero({ rotulo: "Recebido no mês", valor: dinheiro(recebido), icone: "dinheiro", tom: "ok",
+        nota: previsto ? `${Math.round((recebido / previsto) * 100)}% do previsto` : "" }),
+      cartaoNumero({ rotulo: "A receber no mês", valor: dinheiro(aReceber), icone: "relogio" }),
+      cartaoNumero({ rotulo: "Em atraso", valor: dinheiro(totalAtrasado), icone: "sino", tom: totalAtrasado ? "alerta" : "",
+        nota: atrasadas.length ? `${atrasadas.length} ${atrasadas.length === 1 ? "aluno" : "alunos"}` : "ninguém devendo" }),
+      cartaoNumero({ rotulo: "Previsto com os planos", valor: dinheiro(previsto), icone: "alvo",
+        nota: "se todo mundo pagar em dia" }),
     ])
   );
+
+  /* seis meses de mensalidades, para enxergar a curva */
+  const serie = [];
+  for (let k = 5; k >= 0; k--) {
+    const m = primeiroDoMes(somarMeses(hoje(), -k));
+    const comp = iso(m);
+    const lista = ultimos.filter((c) => c.competencia === comp);
+    serie.push({
+      rotulo: MESES[m.getMonth()].slice(0, 3),
+      recebido: lista.filter((c) => c.status === "paga").reduce((s, c) => s + Number(c.valor), 0),
+      aberto: lista.filter((c) => c.status === "aberta").reduce((s, c) => s + Number(c.valor), 0),
+    });
+  }
+  raiz.appendChild(graficoBarras(serie, {
+    titulo: "Últimos seis meses",
+    sub: "O que já entrou e o que ainda está em aberto",
+    formatar: reais,
+    partes: [
+      { chave: "recebido", rotulo: "Recebido", cor: OURO.medio },
+      { chave: "aberto", rotulo: "Em aberto", cor: OURO.escuro },
+    ],
+  }));
 
   /* recebido por forma de pagamento, no mes */
   const pagas = doMes.filter((c) => c.status === "paga");
