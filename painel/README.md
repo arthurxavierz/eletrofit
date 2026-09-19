@@ -7,10 +7,13 @@ Feito em HTML, CSS e JavaScript puros. Não tem build, não tem framework e não
 precisa de servidor próprio. É a mesma lógica do site: publicar a pasta já
 coloca no ar. O banco de dados é o Supabase.
 
-O visual é propositalmente quieto: fundo claro, texto preto, linhas finas. O
-ouro da marca aparece só para marcar o que está selecionado, e verde e vermelho
-só quando significam alguma coisa, como pago, atrasado e falta. A barra preta
-no topo é o que amarra o painel ao site.
+O visual usa fundo claro, grafite, divisórias e amarelo elétrico nos comandos
+principais e na navegação ativa. Verde e vermelho indicam situações como pago,
+atrasado e falta. Tipografia, cores e a marca ligam o painel ao site público.
+Hoje e Financeiro incluem indicadores de progresso calculados dos dados reais.
+No celular, o menu permanece na parte inferior e os controles têm área de toque
+de pelo menos 44px. As janelas prendem o foco, fecham com Escape e preservam o
+formulário quando uma confirmação é cancelada.
 
 Quem entra no painel é a proprietária e a equipe. O aluno não tem login, ele é
 apenas um cadastro. Isso deixa o sistema mais simples e mais seguro.
@@ -30,7 +33,7 @@ painel/
 │   ├── 02_permissoes.sql     Quem pode ver o quê
 │   └── 03_primeiro_acesso.sql Cria o estúdio e liga o seu usuário
 ├── img/
-│   └── eletrofit-logo.png
+│   └── eletrofit-raio.png
 └── js/
     ├── app.js       Login e troca de tela
     ├── db.js        Todo o acesso aos dados
@@ -46,7 +49,9 @@ Com o `config.js` vazio, o painel abre com dados de exemplo guardados no própri
 navegador. Serve para você clicar em tudo antes de configurar, e serve também
 para mostrar o sistema pronto para um cliente novo sem precisar criar nada.
 
-Basta abrir o `index.html` no navegador, ou servir a pasta:
+O painel usa módulos JavaScript e precisa ser servido por HTTP. Na raiz do
+repositório, execute `node preview.cjs` e use o endereço do painel exibido.
+Também é possível servir apenas a pasta com Python instalado:
 
 ```bash
 cd painel

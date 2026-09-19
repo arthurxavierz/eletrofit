@@ -2,7 +2,7 @@
 
 import { sessoesEntre } from "../db.js";
 import { el, limpar, hora, iso, dataCurta, somarDias, inicioDaSemana, hoje, DIAS_CURTO, iniciais } from "../util.js";
-import { etiqueta } from "../ui.js";
+import { etiqueta, botaoIcone } from "../ui.js";
 import { estado } from "../estado.js";
 import { abrirNovaSessao, abrirAcoesSessao } from "./sessao.js";
 
@@ -26,9 +26,9 @@ export async function montar(raiz) {
         el("p", { class: "tela__sub", texto: `${dataCurta(inicio)} a ${dataCurta(somarDias(inicio, 6))}` }),
       ]),
       el("div", { class: "linha-botoes" }, [
-        el("button", { class: "bt bt--linha bt--peq", texto: "Anterior", onclick: () => { semanaAtual = somarDias(semanaAtual, -7); montar(raiz); } }),
+        botaoIcone("esquerda", "Semana anterior", () => { semanaAtual = somarDias(semanaAtual, -7); montar(raiz); }),
         el("button", { class: "bt bt--linha bt--peq", texto: "Hoje", onclick: () => { semanaAtual = inicioDaSemana(hoje()); montar(raiz); } }),
-        el("button", { class: "bt bt--linha bt--peq", texto: "Próxima", onclick: () => { semanaAtual = somarDias(semanaAtual, 7); montar(raiz); } }),
+        botaoIcone("direita", "Próxima semana", () => { semanaAtual = somarDias(semanaAtual, 7); montar(raiz); }),
         el("button", { class: "bt bt--primario bt--peq", texto: "Marcar", onclick: () => abrirNovaSessao({ data: new Date(inicio) }, recarregar) }),
       ]),
     ])

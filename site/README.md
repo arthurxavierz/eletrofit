@@ -7,8 +7,9 @@ fisioterapia e reabilitação.
 HTML, CSS e JavaScript puros, sem build, sem framework e sem dependência de
 servidor. É só publicar a pasta.
 
-Visual: base branca, texto preto e o ouro da marca nos detalhes. As fotos da
-fachada à noite entram como blocos escuros, em contraste com o branco da página.
+Visual: grafite, branco e amarelo elétrico, com títulos em Anton e texto em
+Manrope. Fotografias reais, seções abertas, método numerado, benefícios em
+linhas e galeria ampliável. A mesma identidade aparece no painel de gestão.
 
 ---
 
@@ -21,7 +22,7 @@ passo de publicação no README de lá.
 site/
 ├── index.html      A página inteira, em seções
 ├── styles.css      Estilos. Base clara, acentos em ouro
-├── script.js       Menu, animações de entrada, dúvidas e envio ao WhatsApp
+├── script.js       Menu, galeria, mapa, animações, dúvidas e envio ao WhatsApp
 ├── config.js       Ligação com o painel, opcional
 ├── favicon.png     Ícone da aba, recortado do raio da marca
 └── img/
@@ -29,7 +30,7 @@ site/
     ├── fachada-hero-mobile.jpg   Foto de topo, recorte vertical do celular
     ├── fachada-entrada.jpg       Fachada na seção do estúdio
     ├── fachada-lateral.jpg       Fachada na seção do estúdio
-    ├── eletrofit-logo.png        Logotipo em círculo, fundo transparente
+    ├── eletrofit-raio.png        Símbolo da marca
     └── og-eletrofit.jpg          Imagem de compartilhamento (WhatsApp, redes)
 ```
 
@@ -57,13 +58,13 @@ DNS e envie os arquivos da pasta como estão.
 
 | Seção | O que faz |
 | --- | --- |
-| Topo | Foto da fachada, chamada principal e dois cartões de destaque |
+| Topo | Foto da fachada, marca em destaque, chamada e aula experimental |
 | Método | Quatro passos, da avaliação ao acompanhamento |
 | Benefícios | Seis ganhos da eletroestimulação, em uma linha cada |
-| Estúdio | Fotos da fachada e três pontos sobre a estrutura |
+| Estúdio | Fotos reais com ampliação, setas de navegação e legendas |
 | Dúvidas | Quatro perguntas, incluindo contraindicações |
 | Agendar | Formulário que monta a mensagem e abre o WhatsApp |
-| Contato | Telefone, Instagram, horário e mapa |
+| Contato | Telefone, Instagram, horário, rota e mapa sob demanda |
 
 A barra de navegação tem dois estados. Sobre a foto do topo ela é invisível: só o
 logotipo, os links em branco e o botão de aula experimental, sem fundo e sem
@@ -72,7 +73,13 @@ escritas em branco. A troca é feita por IntersectionObserver, no `script.js`.
 No celular ela vira logotipo mais menu, com o painel também escuro.
 
 O formulário tem quatro campos (nome, celular, objetivo e período). Ele valida,
-monta o texto e abre o WhatsApp do estúdio com a mensagem pronta.
+associa os erros aos campos, foca o primeiro erro e abre o WhatsApp com a mensagem
+pronta. Um link alternativo permite continuar se o navegador bloquear a nova aba.
+
+A galeria usa um diálogo nativo, aceita as setas do teclado e fecha com Escape.
+O menu fechado fica fora da navegação por teclado. As animações respeitam a
+preferência de redução de movimento. O mapa do Google só carrega ao clicar em
+"Ver mapa da região"; o link externo de rota funciona independentemente dele.
 
 Se o arquivo `config.js` estiver preenchido com os dados do Supabase, o mesmo
 envio também registra o pedido no painel, na tela de Pedidos, e a proprietária

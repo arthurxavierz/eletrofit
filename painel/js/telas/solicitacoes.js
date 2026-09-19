@@ -34,8 +34,8 @@ export async function montar(raiz) {
 
   raiz.appendChild(
     el("div", { class: "abas" }, [
-      el("button", { class: "abas__item " + (aba === "nova" ? "ativo" : ""), texto: `Novos (${novas.length})`, onclick: () => { aba = "nova"; montar(raiz); } }),
-      el("button", { class: "abas__item " + (aba === "todas" ? "ativo" : ""), texto: "Todos", onclick: () => { aba = "todas"; montar(raiz); } }),
+      el("button", { class: "abas__item " + (aba === "nova" ? "ativo" : ""), "aria-pressed": String(aba === "nova"), texto: `Novos (${novas.length})`, onclick: () => { aba = "nova"; montar(raiz); } }),
+      el("button", { class: "abas__item " + (aba === "todas" ? "ativo" : ""), "aria-pressed": String(aba === "todas"), texto: "Todos", onclick: () => { aba = "todas"; montar(raiz); } }),
     ])
   );
 
@@ -79,7 +79,7 @@ export async function montar(raiz) {
             : null,
           s.status === "nova"
             ? el("button", {
-                class: "bt bt--linha bt--peq", texto: "Ja atendi",
+                class: "bt bt--linha bt--peq", texto: "Já atendi",
                 onclick: async () => { await atualizarSolicitacao(s.id, { status: "atendida" }); aviso("Pedido marcado como atendido."); montar(raiz); },
               })
             : null,

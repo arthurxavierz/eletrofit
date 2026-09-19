@@ -28,9 +28,9 @@ function telaLogin() {
   limpar(app);
 
   const form = el("form", { class: "login__form" });
-  const email = el("input", { class: "entrada", type: "email", name: "email", placeholder: "seu@email.com", autocomplete: "email" });
-  const senha = el("input", { class: "entrada", type: "password", name: "senha", placeholder: "Sua senha", autocomplete: "current-password" });
-  const erro = el("p", { class: "login__erro", hidden: true });
+  const email = el("input", { class: "entrada", type: "email", name: "email", placeholder: "seu@email.com", autocomplete: "email", required: true });
+  const senha = el("input", { class: "entrada", type: "password", name: "senha", placeholder: "Sua senha", autocomplete: "current-password", required: true });
+  const erro = el("p", { class: "login__erro", role: "alert", hidden: true });
   const bt = el("button", { class: "bt bt--primario bt--cheio", type: "submit", texto: "Entrar" });
 
   form.append(
@@ -58,7 +58,12 @@ function telaLogin() {
 
   app.appendChild(
     el("div", { class: "login" }, [
-      el("span", { class: "login__brilho", "aria-hidden": "true" }),
+      el("div", { class: "login__intro" }, [
+        el("span", { class: "login__kicker", texto: "ELETROFIT / GESTÃO DO ESTÚDIO" }),
+        el("h2", { texto: "Mais cuidado.\nEm cada detalhe." }),
+        el("p", { texto: "Alunos, treinos e a rotina do estúdio. Tudo no seu ritmo." }),
+        el("span", { class: "login__assinatura", texto: "Tecnologia + movimento" }),
+      ]),
       el("div", { class: "login__caixa" }, [
         el("img", { class: "login__marca", src: "img/eletrofit-raio.png", alt: "Eletrofit" }),
         el("div", { class: "login__marca-nome", "aria-hidden": "true" }, [
@@ -99,7 +104,10 @@ function montarEstrutura() {
         ]),
       ]),
       DEMO ? el("span", { class: "selo-demo", texto: "Demonstração" }) : null,
-      el("button", { class: "bt bt--linha bt--peq", texto: "Sair", onclick: async () => { await sair(); location.hash = ""; telaLogin(); } }),
+      el("button", { class: "bt bt--linha bt--peq", texto: "Sair", onclick: async () => {
+        try { await sair(); estado.perfil = null; location.hash = ""; telaLogin(); }
+        catch (e) { aviso(e.message, "erro"); }
+      } }),
     ]),
   ]);
 
@@ -112,7 +120,12 @@ function montarEstrutura() {
     )
   );
 
-  const conteudo = el("main", { class: "conteudo", id: "conteudo" });
+  menu.prepend(el("span", { class: "menu__titulo", texto: "Gestão do estúdio" }));
+  menu.append(el("div", { class: "menu__rodape" }, [
+    el("span", { texto: "ELETROFIT" }),
+    el("small", { texto: "Tecnologia + movimento" }),
+  ]));
+  const conteudo = el("main", { class: "conteudo", id: "conteudo", tabindex: "-1" });
 
   app.append(barra, el("div", { class: "corpo" }, [menu, conteudo]));
 }
@@ -120,6 +133,8 @@ function montarEstrutura() {
 function marcarMenu(id) {
   document.querySelectorAll(".menu__item").forEach((a) => {
     a.classList.toggle("ativo", a.dataset.tela === id);
+    if (a.dataset.tela === id) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
   });
 }
 
@@ -130,9 +145,11 @@ export async function irPara(id) {
     return; // o evento de hash chama de novo
   }
   marcarMenu(tela.id);
-  fecharFolha();
+  while (document.querySelector(".folha__fundo")) fecharFolha();
   const conteudo = document.getElementById("conteudo");
   if (!conteudo) return;
+  conteudo.dataset.tela = tela.id;
+  document.title = tela.nome + " | Eletrofit Gestão";
   carregando(conteudo);
   try {
     await tela.modulo.montar(conteudo);
@@ -141,6 +158,7 @@ export async function irPara(id) {
       el("div", { class: "vazio" }, [
         el("p", { texto: "Não foi possível carregar esta tela." }),
         el("p", { class: "vazio__detalhe", texto: e.message }),
+        el("button", { class: "bt bt--linha", texto: "Tentar novamente", onclick: () => irPara(tela.id) }),
       ])
     );
     aviso(e.message, "erro");
@@ -170,6 +188,11 @@ async function iniciar() {
 window.addEventListener("hashchange", () => {
   if (!estado.perfil) return;
   irPara((location.hash || "#hoje").slice(1));
+});
+
+document.querySelector(".skip").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("conteudo")?.focus();
 });
 
 iniciar();

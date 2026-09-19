@@ -8,7 +8,7 @@ let avisoTimer = null;
 export function aviso(texto, tipo = "ok") {
   let caixa = document.getElementById("aviso");
   if (!caixa) {
-    caixa = el("div", { id: "aviso", class: "aviso" });
+    caixa = el("div", { id: "aviso", class: "aviso", role: "status", "aria-live": "polite", "aria-atomic": "true" });
     document.body.appendChild(caixa);
   }
   caixa.textContent = texto;
@@ -18,29 +18,68 @@ export function aviso(texto, tipo = "ok") {
 }
 
 /* ---------- painel que sobe por cima da tela ---------- */
-export function abrirFolha(titulo, montarConteudo, { largura = "" } = {}) {
-  fecharFolha();
+const folhas = [];
+const focaveis = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]';
+let folhaId = 0;
+
+export function abrirFolha(titulo, montarConteudo, { largura = "", empilhar = false, aoFechar = null } = {}) {
+  if (!empilhar) while (folhas.length) fecharFolha();
+  const anterior = folhas.at(-1);
+  if (anterior) { anterior.fundo.hidden = true; anterior.fundo.inert = true; }
+  const focoAnterior = document.activeElement;
+  const tituloId = "folhaTitulo" + (++folhaId);
   const corpo = el("div", { class: "folha__corpo" });
-  const folha = el("div", { class: "folha" + (largura ? " folha--" + largura : "") }, [
+  const folha = el("div", { class: "folha" + (largura ? " folha--" + largura : ""), role: "dialog", "aria-modal": "true", "aria-labelledby": tituloId, tabindex: "-1" }, [
     el("div", { class: "folha__topo" }, [
-      el("h2", { texto: titulo }),
-      el("button", { class: "folha__x", "aria-label": "Fechar", onclick: fecharFolha, texto: "×" }),
+      el("h2", { id: tituloId, texto: titulo }),
+      el("button", { class: "folha__x", "aria-label": "Fechar", title: "Fechar", onclick: () => fechar(), texto: "×" }),
     ]),
     corpo,
   ]);
-  const fundo = el("div", { class: "folha__fundo", id: "folhaFundo", onclick: (e) => { if (e.target.id === "folhaFundo") fecharFolha(); } }, [folha]);
+  const fundo = el("div", { class: "folha__fundo", onclick: (e) => { if (e.target === fundo) fechar(); } }, [folha]);
+  const fechar = () => fecharFolha(fundo);
+  folhas.push({ fundo, folha, focoAnterior, aoFechar });
   document.body.appendChild(fundo);
   document.body.classList.add("travado");
-  montarConteudo(corpo, fecharFolha);
-  requestAnimationFrame(() => fundo.classList.add("visivel"));
-  return { fechar: fecharFolha, corpo };
+  document.getElementById("app").inert = true;
+  requestAnimationFrame(() => {
+    fundo.classList.add("visivel");
+    if (folhas.at(-1)?.fundo === fundo) (folha.querySelector("input,select,textarea") || folha.querySelector("button") || folha).focus();
+  });
+  Promise.resolve().then(() => montarConteudo(corpo, fechar)).catch((e) => {
+    if (fundo.isConnected) {
+      corpo.appendChild(el("p", { class: "erro-inline", role: "alert", texto: "Não foi possível carregar: " + e.message }));
+    }
+  });
+  return { fechar, corpo };
 }
 
-export function fecharFolha() {
-  const f = document.getElementById("folhaFundo");
-  if (f) f.remove();
-  document.body.classList.remove("travado");
+export function fecharFolha(alvo = null) {
+  const atual = folhas.at(-1);
+  if (!atual || (alvo instanceof HTMLElement && atual.fundo !== alvo)) return;
+  folhas.pop();
+  atual.fundo.remove();
+  const anterior = folhas.at(-1);
+  if (anterior) { anterior.fundo.hidden = false; anterior.fundo.inert = false; }
+  else {
+    document.body.classList.remove("travado");
+    document.getElementById("app").inert = false;
+  }
+  if (atual.focoAnterior?.isConnected) atual.focoAnterior.focus({ preventScroll: true });
+  if (atual.aoFechar) atual.aoFechar();
 }
+
+document.addEventListener("keydown", (e) => {
+  const atual = folhas.at(-1);
+  if (!atual) return;
+  if (e.key === "Escape") { e.preventDefault(); fecharFolha(); return; }
+  if (e.key !== "Tab") return;
+  const itens = [...atual.folha.querySelectorAll(focaveis)].filter((no) => no.getClientRects().length);
+  const primeiro = itens[0], ultimo = itens.at(-1);
+  if (!primeiro) { e.preventDefault(); atual.folha.focus(); return; }
+  if (e.shiftKey && (document.activeElement === primeiro || document.activeElement === atual.folha)) { e.preventDefault(); ultimo.focus(); }
+  else if (!e.shiftKey && (document.activeElement === ultimo || document.activeElement === atual.folha)) { e.preventDefault(); primeiro.focus(); }
+});
 
 /* ---------- confirmacao ---------- */
 export function confirmar(texto, { rotuloOk = "Confirmar", perigo = false } = {}) {
@@ -53,11 +92,11 @@ export function confirmar(texto, { rotuloOk = "Confirmar", perigo = false } = {}
           el("button", {
             class: "bt " + (perigo ? "bt--perigo" : "bt--primario"),
             texto: rotuloOk,
-            onclick: () => { fechar(); resolve(true); },
+            onclick: () => { resolve(true); fechar(); },
           }),
         ])
       );
-    }, { largura: "estreita" });
+    }, { largura: "estreita", empilhar: true, aoFechar: () => resolve(false) });
   });
 }
 
@@ -146,7 +185,10 @@ export function vazio(texto, acao = null) {
 }
 
 export function carregando(destino) {
-  limpar(destino).appendChild(el("div", { class: "carregando", texto: "Carregando" }));
+  limpar(destino).appendChild(el("div", { class: "carregando", role: "status", "aria-label": "Carregando" }, [
+    el("span", { class: "carregando__rotulo", texto: "Carregando" }),
+    el("div", { class: "esqueleto", "aria-hidden": "true" }, [el("i"), el("i"), el("i")]),
+  ]));
 }
 
 export function etiqueta(texto, tipo = "") {

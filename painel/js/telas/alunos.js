@@ -6,13 +6,18 @@ import { etiqueta, vazio, botaoIcone } from "../ui.js";
 import { abrirFicha, abrirFormularioAluno, abrirWhats } from "./ficha.js";
 
 let filtro = { busca: "", status: "" };
+let versaoBusca = 0;
 
-export async function montar(raiz) {
+export async function montar(raiz, manterFoco = false) {
+  const versao = ++versaoBusca;
   const recarregar = () => montar(raiz);
   const alunos = await listarAlunos(filtro);
 
   const matriculas = {};
   await Promise.all(alunos.map(async (a) => { matriculas[a.id] = await matriculaDoAluno(a.id); }));
+  if (versao !== versaoBusca || raiz.dataset.tela !== "alunos") return;
+  const buscaAtiva = manterFoco && document.activeElement?.type === "search";
+  const cursor = buscaAtiva ? document.activeElement.selectionStart : null;
 
   limpar(raiz);
 
@@ -27,12 +32,12 @@ export async function montar(raiz) {
   );
 
   const busca = el("input", {
-    class: "entrada", type: "search", placeholder: "Buscar por nome ou telefone", value: filtro.busca,
+    class: "entrada", type: "search", "aria-label": "Buscar alunos por nome ou telefone", placeholder: "Buscar por nome ou telefone", value: filtro.busca,
   });
   let debounce = null;
   busca.addEventListener("input", () => {
     clearTimeout(debounce);
-    debounce = setTimeout(() => { filtro.busca = busca.value.trim(); montar(raiz); }, 300);
+    debounce = setTimeout(() => { filtro.busca = busca.value; montar(raiz, true); }, 300);
   });
 
   const abas = el("div", { class: "abas" },
@@ -44,6 +49,7 @@ export async function montar(raiz) {
     ].map((o) =>
       el("button", {
         class: "abas__item " + (filtro.status === o.valor ? "ativo" : ""),
+        "aria-pressed": String(filtro.status === o.valor),
         texto: o.texto,
         onclick: () => { filtro.status = o.valor; montar(raiz); },
       })
@@ -51,6 +57,7 @@ export async function montar(raiz) {
   );
 
   raiz.appendChild(el("div", { class: "filtros" }, [busca, abas]));
+  if (buscaAtiva) { busca.focus({ preventScroll: true }); busca.setSelectionRange(cursor, cursor); }
 
   if (!alunos.length) {
     raiz.appendChild(vazio(

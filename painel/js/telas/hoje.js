@@ -40,6 +40,20 @@ export async function montar(raiz) {
     ])
   );
 
+  const previstas = dados.sessoesHoje.filter((s) => s.status !== "cancelada");
+  const realizadas = previstas.filter((s) => s.status === "realizada").length;
+  const faltas = previstas.filter((s) => s.status === "falta").length;
+  raiz.appendChild(el("section", { class: "progresso", "aria-label": "Andamento dos treinos" }, [
+    el("div", { class: "progresso__topo" }, [
+      el("h2", { texto: "Ritmo do dia" }),
+      el("span", { texto: `${realizadas} de ${previstas.length} sessões realizadas` }),
+    ]),
+    el("progress", { max: Math.max(previstas.length, 1), value: realizadas, "aria-label": "Sessões realizadas hoje" }),
+    el("p", { class: "obs", texto: previstas.length
+      ? `${previstas.length - realizadas - faltas} aguardando presença · ${faltas} ${faltas === 1 ? "falta" : "faltas"}`
+      : "A agenda está livre hoje." }),
+  ]));
+
   /* avisos */
   const avisos = [];
   if (dados.solicitacoes.length) {

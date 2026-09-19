@@ -2,7 +2,7 @@
 
 import { cobrancasDoMes, cobrancasEmAberto, gerarCobrancasDoMes, salvarCobranca } from "../db.js";
 import { el, limpar, dinheiro, dataBr, iso, primeiroDoMes, somarMeses, mesPorExtenso, hoje } from "../util.js";
-import { aviso, etiqueta, vazio, confirmar, abrirFolha, campo, entradaSelecao, lerFormulario, botaoComIcone } from "../ui.js";
+import { aviso, etiqueta, vazio, confirmar, abrirFolha, campo, entradaSelecao, lerFormulario, botaoComIcone, botaoIcone } from "../ui.js";
 import { abrirFicha, abrirWhats, textoCobranca } from "./ficha.js";
 
 let mes = null;
@@ -96,8 +96,8 @@ export async function montar(raiz) {
         el("p", { class: "tela__sub", texto: mesPorExtenso(mes) }),
       ]),
       el("div", { class: "linha-botoes" }, [
-        el("button", { class: "bt bt--linha bt--peq", texto: "Anterior", onclick: () => { mes = somarMeses(mes, -1); montar(raiz); } }),
-        el("button", { class: "bt bt--linha bt--peq", texto: "Próximo", onclick: () => { mes = somarMeses(mes, 1); montar(raiz); } }),
+        botaoIcone("esquerda", "Mês anterior", () => { mes = somarMeses(mes, -1); montar(raiz); }),
+        botaoIcone("direita", "Próximo mês", () => { mes = somarMeses(mes, 1); montar(raiz); }),
         el("button", {
           class: "bt bt--primario bt--peq", texto: "Gerar mensalidades",
           onclick: async () => {
@@ -122,6 +122,16 @@ export async function montar(raiz) {
   );
 
   /* recebido por forma de pagamento, no mes */
+  const previsto = recebido + aReceber;
+  raiz.appendChild(el("section", { class: "progresso", "aria-label": "Recebimentos do mês" }, [
+    el("div", { class: "progresso__topo" }, [
+      el("h2", { texto: "Recebimentos do mês" }),
+      el("span", { texto: previsto ? Math.round(recebido / previsto * 100) + "% recebido" : "Sem mensalidades" }),
+    ]),
+    el("progress", { max: Math.max(previsto, 1), value: recebido, "aria-label": "Valor recebido em relação ao total do mês" }),
+    el("p", { class: "obs", texto: `${dinheiro(recebido)} recebidos de ${dinheiro(previsto)} previstos` }),
+  ]));
+
   const pagas = doMes.filter((c) => c.status === "paga");
   if (pagas.length) {
     const porForma = {};
@@ -143,9 +153,9 @@ export async function montar(raiz) {
 
   raiz.appendChild(
     el("div", { class: "abas" }, [
-      el("button", { class: "abas__item " + (aba === "mes" ? "ativo" : ""), texto: "Do mês", onclick: () => { aba = "mes"; montar(raiz); } }),
-      el("button", { class: "abas__item " + (aba === "atraso" ? "ativo" : ""), texto: `Em atraso (${atrasadas.length})`, onclick: () => { aba = "atraso"; montar(raiz); } }),
-      el("button", { class: "abas__item " + (aba === "aberto" ? "ativo" : ""), texto: `Tudo em aberto (${abertas.length})`, onclick: () => { aba = "aberto"; montar(raiz); } }),
+      el("button", { class: "abas__item " + (aba === "mes" ? "ativo" : ""), "aria-pressed": String(aba === "mes"), texto: "Do mês", onclick: () => { aba = "mes"; montar(raiz); } }),
+      el("button", { class: "abas__item " + (aba === "atraso" ? "ativo" : ""), "aria-pressed": String(aba === "atraso"), texto: `Em atraso (${atrasadas.length})`, onclick: () => { aba = "atraso"; montar(raiz); } }),
+      el("button", { class: "abas__item " + (aba === "aberto" ? "ativo" : ""), "aria-pressed": String(aba === "aberto"), texto: `Tudo em aberto (${abertas.length})`, onclick: () => { aba = "aberto"; montar(raiz); } }),
     ])
   );
 

@@ -14,6 +14,22 @@ Duas pastas, dois endereços, o mesmo repositório:
 Tudo em HTML, CSS e JavaScript puros. Sem build, sem framework, sem servidor
 próprio. Publicar a pasta já coloca no ar. O banco de dados é o Supabase.
 
+## Prévia local
+
+Com Node.js instalado, na raiz do repositório:
+
+```bash
+node preview.cjs
+```
+
+O terminal mostra os endereços do site e do painel. A porta padrão é 8766;
+se estiver ocupada, a prévia usa a próxima livre. O servidor atende somente
+no próprio computador. No painel, as configurações vazias mantêm a demonstração.
+Esse servidor é só para visualizar localmente: a publicação continua estática.
+
+A auditoria visual está em [DESIGN.md](DESIGN.md). O roteiro para conferir
+as alterações está em [TESTAR.md](TESTAR.md).
+
 ---
 
 ## Site

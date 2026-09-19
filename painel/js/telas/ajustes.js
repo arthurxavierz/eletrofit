@@ -144,7 +144,7 @@ export async function montar(raiz) {
   const blocoSistema = el("section", { class: "bloco" }, [el("h2", { class: "bloco__titulo", texto: "Sistema" })]);
   if (DEMO) {
     blocoSistema.append(
-      el("p", { class: "obs", texto: "O painel está em modo demonstração. Os dados são de exemplo e ficam guardados apenas neste navegador. Para usar de verdade, preencha o arquivo config.js com os dados do Supabase." }),
+      el("p", { class: "obs", texto: "Você está na demonstração. Os dados são de exemplo e as alterações ficam apenas neste navegador." }),
       el("button", {
         class: "bt bt--linha bt--peq", texto: "Recarregar dados de exemplo",
         onclick: async () => {

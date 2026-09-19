@@ -29,11 +29,15 @@
   var closeMenu = function () {
     toggle.classList.remove("open");
     mobile.classList.remove("open");
+    mobile.hidden = true;
+    mobile.inert = true;
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-label", "Abrir menu");
   };
   toggle.addEventListener("click", function () {
     var open = mobile.classList.toggle("open");
+    mobile.hidden = !open;
+    mobile.inert = !open;
     toggle.classList.toggle("open", open);
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
     toggle.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
@@ -41,6 +45,32 @@
   mobile.querySelectorAll("a").forEach(function (a) {
     a.addEventListener("click", closeMenu);
   });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !mobile.hidden) {
+      closeMenu();
+      toggle.focus();
+    }
+  });
+  document.addEventListener("click", function (e) {
+    if (!mobile.hidden && !nav.contains(e.target)) closeMenu();
+  });
+  window.matchMedia("(min-width:960px)").addEventListener("change", function (e) {
+    if (e.matches) closeMenu();
+  });
+
+  /* Marca a seção visível sem interferir na navegação por âncoras. */
+  if ("IntersectionObserver" in window) {
+    var sectionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        nav.querySelectorAll('a[href^="#"]').forEach(function (link) {
+          if (link.hash === "#" + entry.target.id) link.setAttribute("aria-current", "location");
+          else link.removeAttribute("aria-current");
+        });
+      });
+    }, { rootMargin: "-20% 0px -55% 0px", threshold: 0 });
+    document.querySelectorAll("main section[id]").forEach(function (section) { sectionObserver.observe(section); });
+  }
 
   /* ---------- Stagger: atrasa cada filho de .js-stagger ---------- */
   document.querySelectorAll(".js-stagger").forEach(function (group) {
@@ -51,7 +81,8 @@
 
   /* ---------- Reveal ao entrar na viewport ---------- */
   var reveals = document.querySelectorAll(".reveal");
-  if ("IntersectionObserver" in window) {
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.documentElement.classList.add("motion-ready");
     var io = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (e) {
@@ -72,6 +103,50 @@
     });
   }
 
+  /* Galeria: o link continua abrindo a foto se dialog não estiver disponível. */
+  var gallery = document.getElementById("galleryDialog");
+  var photos = Array.from(document.querySelectorAll("[data-gallery]"));
+  var photoIndex = 0;
+  var photoTrigger = null;
+  var showPhoto = function (index) {
+    photoIndex = (index + photos.length) % photos.length;
+    var source = photos[photoIndex].querySelector("img");
+    var target = document.getElementById("galleryImage");
+    target.src = photos[photoIndex].href;
+    target.alt = source.alt;
+    document.getElementById("galleryCount").textContent = (photoIndex + 1) + " / " + photos.length;
+    document.getElementById("galleryCaption").textContent = source.alt;
+  };
+  if (gallery && typeof gallery.showModal === "function") {
+    photos.forEach(function (link, index) {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        photoTrigger = link;
+        showPhoto(index);
+        gallery.showModal();
+        document.body.classList.add("gallery-open");
+      });
+    });
+    document.getElementById("galleryClose").addEventListener("click", function () { gallery.close(); });
+    document.getElementById("galleryPrev").addEventListener("click", function () { showPhoto(photoIndex - 1); });
+    document.getElementById("galleryNext").addEventListener("click", function () { showPhoto(photoIndex + 1); });
+    gallery.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        showPhoto(photoIndex + (e.key === "ArrowRight" ? 1 : -1));
+      }
+    });
+    gallery.addEventListener("click", function (e) {
+      if (e.target !== gallery) return;
+      var rect = gallery.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) gallery.close();
+    });
+    gallery.addEventListener("close", function () {
+      document.body.classList.remove("gallery-open");
+      if (photoTrigger) photoTrigger.focus({ preventScroll: true });
+    });
+  }
+
   /* ---------- Dúvidas: abre uma por vez ---------- */
   var qas = document.querySelectorAll(".qa");
   qas.forEach(function (qa) {
@@ -84,6 +159,15 @@
   });
 
   /* ---------- Máscara simples de telefone ---------- */
+  var loadMap = document.getElementById("loadMap");
+  if (loadMap) loadMap.addEventListener("click", function () {
+    var map = document.getElementById("studioMap");
+    map.src = map.dataset.src;
+    map.hidden = false;
+    document.querySelector(".map-external").focus({ preventScroll: true });
+    document.getElementById("mapPreview").hidden = true;
+  });
+
   var tel = document.getElementById("f-celular");
   if (tel) {
     tel.addEventListener("input", function () {
@@ -172,7 +256,7 @@
       var periodo = valOf("f-periodo");
 
       var ok = true;
-      if (!nome) { setErr(fieldOf("f-nome"), "Informe o seu nome."); ok = false; }
+      if (nome.length < 2 || nome.length > 120) { setErr(fieldOf("f-nome"), "Informe seu nome, com 2 a 120 caracteres."); ok = false; }
       if (!celular) { setErr(fieldOf("f-celular"), "Informe o seu celular."); ok = false; }
       else if (celular.replace(/\D/g, "").length < 10) { setErr(fieldOf("f-celular"), "Digite um número com DDD."); ok = false; }
       if (!objetivo) { setErr(fieldOf("f-objetivo"), "Escolha o seu objetivo."); ok = false; }
@@ -180,7 +264,7 @@
 
       if (!ok) {
         var first = form.querySelector(".field--error");
-        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (first) first.querySelector("input,select").focus();
         return;
       }
 
@@ -197,6 +281,7 @@
 
       registrarPedido({ nome: nome, celular: celular, objetivo: objetivo, periodo: periodo });
 
+      document.getElementById("agendarLink").href = url;
       if (okMsg) okMsg.hidden = false;
       window.open(url, "_blank", "noopener");
     });
