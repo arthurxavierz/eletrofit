@@ -1,7 +1,7 @@
 /* Tela inicial: o que acontece hoje e o que precisa de atenção */
 
 import { resumo, atualizarSessao } from "../db.js";
-import { el, limpar, hora, dinheiro, dataBr, primeiroNome, iniciais, DIAS } from "../util.js";
+import { el, limpar, hora, dinheiro, dataBr, primeiroNome, iniciais, DIAS, situacaoCobranca, DIAS_PROXIMA } from "../util.js";
 import { aviso, etiqueta, vazio, botaoIcone, botaoComIcone, icone } from "../ui.js";
 import { abrirFicha, abrirWhats, textoCobranca } from "./ficha.js";
 import { abrirNovaSessao, abrirAcoesSessao } from "./sessao.js";
@@ -36,7 +36,7 @@ export async function montar(raiz) {
       cartaoNumero(dados.sessoesHoje.filter((s) => s.status !== "cancelada").length, "sessões hoje"),
       cartaoNumero(dados.ativos, "alunos ativos"),
       cartaoNumero(dinheiro(dados.aReceber), "a receber no mês"),
-      cartaoNumero(dados.atrasadas.length, "mensalidades atrasadas", dados.atrasadas.length ? "alerta" : ""),
+      cartaoNumero(dados.atrasadas.length, "mensalidades pendentes", dados.atrasadas.length ? "alerta" : ""),
     ])
   );
 
@@ -64,13 +64,13 @@ export async function montar(raiz) {
   }
   if (dados.atrasadas.length) {
     avisos.push({
-      texto: `${dados.atrasadas.length} mensalidade${dados.atrasadas.length > 1 ? "s" : ""} em atraso, somando ${dinheiro(dados.atrasadas.reduce((s, c) => s + Number(c.valor), 0))}`,
+      texto: `${dados.atrasadas.length} mensalidade${dados.atrasadas.length > 1 ? "s pendentes" : " pendente"}, somando ${dinheiro(dados.atrasadas.reduce((s, c) => s + Number(c.valor), 0))}`,
       acao: "Ver financeiro", destino: "#financeiro",
     });
   }
   if (dados.venceSemana.length) {
     avisos.push({
-      texto: `${dados.venceSemana.length} mensalidade${dados.venceSemana.length > 1 ? "s vencem" : " vence"} nos próximos sete dias`,
+      texto: `${dados.venceSemana.length} mensalidade${dados.venceSemana.length > 1 ? "s vencem" : " vence"} nos próximos ${DIAS_PROXIMA} dias`,
       acao: "Ver financeiro", destino: "#financeiro",
     });
   }
@@ -155,12 +155,13 @@ export async function montar(raiz) {
       el("h2", { class: "bloco__titulo", texto: "Para cobrar hoje" }),
       el("ul", { class: "lista-simples" }, dados.atrasadas.slice(0, 6).map((c) => {
         const aluno = c.aluno || {};
-        const dias = Math.floor((new Date() - new Date(c.vencimento + "T12:00:00")) / 864e5);
+        const s = situacaoCobranca(c);
         return el("li", {}, [
           el("div", {}, [
             el("strong", { texto: aluno.nome || "Aluno" }),
-            el("span", { texto: `${dinheiro(c.valor)}  ·  venceu há ${dias} dia${dias === 1 ? "" : "s"}` }),
+            el("span", { texto: `${dinheiro(c.valor)}  ·  ${s.detalhe}` }),
           ]),
+          etiqueta(s.rotulo, s.tom),
           botaoComIcone("whatsapp", "Cobrar", () => abrirWhats(aluno.telefone, textoCobranca(aluno, c)), "bt--linha bt--peq"),
         ]);
       })),

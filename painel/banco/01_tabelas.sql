@@ -69,6 +69,9 @@ create table if not exists planos (
   nome text not null,
   sessoes_semana int not null default 2,
   sessoes_mes int not null default 8,
+  -- mensal, trimestral ou anual. valor e sempre o do ciclo inteiro.
+  periodicidade text not null default 'mensal'
+    check (periodicidade in ('mensal','trimestral','anual')),
   valor numeric(10,2) not null default 0,
   ativo boolean not null default true,
   criado_em timestamptz not null default now()
@@ -86,6 +89,9 @@ create table if not exists matriculas (
   inicio date not null default current_date,
   fim date,
   dia_vencimento int not null default 10 check (dia_vencimento between 1 and 28),
+  -- copiada do plano na matricula, para trocar o plano nao mexer no passado
+  periodicidade text not null default 'mensal'
+    check (periodicidade in ('mensal','trimestral','anual')),
   valor numeric(10,2) not null default 0,
   status text not null default 'ativa' check (status in ('ativa','encerrada')),
   criado_em timestamptz not null default now()
@@ -122,6 +128,10 @@ create table if not exists cobrancas (
   aluno_id uuid not null references alunos(id) on delete cascade,
   matricula_id uuid references matriculas(id) on delete set null,
   competencia date not null,
+  -- ultimo mes coberto. igual a competencia quando o plano e mensal.
+  competencia_fim date,
+  periodicidade text not null default 'mensal'
+    check (periodicidade in ('mensal','trimestral','anual')),
   vencimento date not null,
   valor numeric(10,2) not null default 0,
   status text not null default 'aberta' check (status in ('aberta','paga','cancelada')),
@@ -135,6 +145,28 @@ create index if not exists cobrancas_aluno_idx on cobrancas(aluno_id, competenci
 create index if not exists cobrancas_vencimento_idx on cobrancas(estudio_id, status, vencimento);
 create unique index if not exists cobrancas_sem_repetir
   on cobrancas(matricula_id, competencia) where matricula_id is not null;
+
+-- ---------------------------------------------------
+-- Pagamentos. O historico das baixas.
+-- Desfazer uma baixa marca a linha como estornada em vez
+-- de apagar, entao o historico continua contando a verdade.
+-- ---------------------------------------------------
+create table if not exists pagamentos (
+  id uuid primary key default gen_random_uuid(),
+  estudio_id uuid not null references estudios(id) on delete cascade,
+  cobranca_id uuid not null references cobrancas(id) on delete cascade,
+  aluno_id uuid not null references alunos(id) on delete cascade,
+  valor numeric(10,2) not null default 0,
+  pago_em date not null,
+  forma text not null,
+  observacao text,
+  estornado boolean not null default false,
+  estornado_em timestamptz,
+  registrado_em timestamptz not null default now()
+);
+create index if not exists pagamentos_estudio_idx on pagamentos(estudio_id, pago_em desc);
+create index if not exists pagamentos_aluno_idx on pagamentos(aluno_id, pago_em desc);
+create index if not exists pagamentos_cobranca_idx on pagamentos(cobranca_id);
 
 -- ---------------------------------------------------
 -- Solicitacoes. O que chega do formulario do site.

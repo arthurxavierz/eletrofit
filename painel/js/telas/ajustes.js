@@ -1,7 +1,7 @@
 /* Dados do estudio, planos e informacoes do sistema */
 
 import { salvarEstudio, listarPlanos, salvarPlano, DEMO, reiniciarDemo } from "../db.js";
-import { el, limpar, dinheiro, DIAS } from "../util.js";
+import { el, limpar, dinheiro, DIAS, PERIODICIDADES, rotuloPeriodicidade, precoDoPlano, periodicidadeDe } from "../util.js";
 import { abrirFolha, campo, entradaTexto, entradaSelecao, lerFormulario, aviso, confirmar, etiqueta } from "../ui.js";
 import { estado } from "../estado.js";
 
@@ -15,7 +15,11 @@ function formularioPlano(plano, aoSalvar) {
         campo("Sessões por semana", entradaTexto("sessoes_semana", plano?.sessoes_semana ?? 2, { type: "number", min: 1, max: 7 })),
         campo("Sessões por mês", entradaTexto("sessoes_mes", plano?.sessoes_mes ?? 8, { type: "number", min: 1, max: 31 })),
       ]),
-      campo("Valor mensal", entradaTexto("valor", plano?.valor ?? 0, { type: "number", min: 0, step: "0.01" })),
+      campo("Cobrança", entradaSelecao("periodicidade",
+        PERIODICIDADES.map((x) => ({ valor: x.valor, texto: x.rotulo })), plano?.periodicidade || "mensal"),
+        "Mensal cobra todo mês, trimestral a cada 3 meses, anual uma vez por ano."),
+      campo("Valor do ciclo", entradaTexto("valor", plano?.valor ?? 0, { type: "number", min: 0, step: "0.01" }),
+        "O valor cheio cobrado de uma vez. Em um trimestral, o valor dos 3 meses."),
       campo("Situação", entradaSelecao("ativo", [
         { valor: "true", texto: "Disponível para venda" },
         { valor: "false", texto: "Fora de linha" },
@@ -31,6 +35,7 @@ function formularioPlano(plano, aoSalvar) {
           nome: d.nome.trim(),
           sessoes_semana: Number(d.sessoes_semana),
           sessoes_mes: Number(d.sessoes_mes),
+          periodicidade: d.periodicidade,
           valor: Number(d.valor),
           ativo: d.ativo === "true",
         });
@@ -130,8 +135,9 @@ export async function montar(raiz) {
         el("li", {}, [
           el("div", {}, [
             el("strong", { texto: p.nome }),
-            el("span", { texto: `${p.sessoes_semana}x na semana  ·  ${dinheiro(p.valor)} por mês` }),
+            el("span", { texto: `${p.sessoes_semana}x na semana  ·  ${precoDoPlano(p.valor, p.periodicidade)}` }),
           ]),
+          etiqueta(rotuloPeriodicidade(p.periodicidade), "cinza"),
           p.ativo ? etiqueta("Disponível", "ok") : etiqueta("Fora de linha", "cinza"),
           el("button", { class: "bt bt--linha bt--peq", texto: "Editar", onclick: () => formularioPlano(p, recarregar) }),
         ])

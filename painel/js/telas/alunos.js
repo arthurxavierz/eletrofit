@@ -1,7 +1,7 @@
 /* Lista de alunos, com busca e filtro */
 
 import { listarAlunos, matriculaDoAluno } from "../db.js";
-import { el, limpar, telefoneBonito, iniciais, dinheiro } from "../util.js";
+import { el, limpar, telefoneBonito, iniciais, dinheiro, rotuloPeriodicidade, precoDoPlano } from "../util.js";
 import { etiqueta, vazio, botaoIcone } from "../ui.js";
 import { abrirFicha, abrirFormularioAluno, abrirWhats } from "./ficha.js";
 
@@ -75,10 +75,14 @@ export async function montar(raiz, manterFoco = false) {
           el("span", { class: "avatar", texto: iniciais(a.nome) }),
           el("div", { class: "aluno__dados" }, [
             el("strong", { texto: a.nome }),
-            el("span", { texto: [telefoneBonito(a.telefone), m ? `${m.plano ? m.plano.nome : "Plano"}, ${dinheiro(m.valor)}` : "Sem plano"].filter(Boolean).join("  ·  ") }),
+            el("span", { texto: [
+              telefoneBonito(a.telefone),
+              m ? `${m.plano ? m.plano.nome : "Plano"}, ${precoDoPlano(m.valor, m.periodicidade)}` : "Sem plano",
+            ].filter(Boolean).join("  ·  ") }),
           ]),
         ]),
         el("div", { class: "aluno__lado" }, [
+          m ? etiqueta(rotuloPeriodicidade(m.periodicidade), "cinza") : null,
           a.saude_liberado ? null : etiqueta("Saúde", "erro"),
           a.status === "ativo" ? null : etiqueta(a.status === "experimental" ? "Experimental" : "Inativo",
             a.status === "experimental" ? "aviso" : "cinza"),

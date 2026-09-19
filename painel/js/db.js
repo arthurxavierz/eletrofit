@@ -9,7 +9,10 @@
    =================================================== */
 
 import { CONFIG } from "../config.js";
-import { iso, primeiroDoMes, novoId, somarDias, hoje } from "./util.js";
+import {
+  iso, primeiroDoMes, novoId, somarDias, hoje, somarMeses, DIAS_PROXIMA,
+  competenciaCaiNoCiclo, fimDaCompetencia, vencimentoNoMes,
+} from "./util.js";
 
 export const DEMO = !CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY;
 
@@ -51,7 +54,10 @@ function erro(res) {
    Modo demonstracao
    =================================================== */
 
-const CHAVE = "eletrofit.demo.v1";
+/* v2 trouxe periodicidade dos planos e historico de pagamentos.
+   Demonstracoes gravadas na v1 nao tem esses campos, entao sao descartadas. */
+const CHAVE = "eletrofit.demo.v2";
+const CHAVES_ANTIGAS = ["eletrofit.demo.v1"];
 let demo = null;
 
 function salvarDemo() {
@@ -76,22 +82,38 @@ function semear() {
     dias_semana: [1, 2, 3, 4, 5],
   };
   const planos = [
-    { id: "p1", estudio_id: est.id, nome: "Plano 1x na semana", sessoes_semana: 1, sessoes_mes: 4, valor: 240, ativo: true },
-    { id: "p2", estudio_id: est.id, nome: "Plano 2x na semana", sessoes_semana: 2, sessoes_mes: 8, valor: 380, ativo: true },
-    { id: "p3", estudio_id: est.id, nome: "Plano 3x na semana", sessoes_semana: 3, sessoes_mes: 12, valor: 490, ativo: true },
+    { id: "p1", estudio_id: est.id, nome: "Plano 1x na semana", sessoes_semana: 1, sessoes_mes: 4, periodicidade: "mensal", valor: 240, ativo: true },
+    { id: "p2", estudio_id: est.id, nome: "Plano 2x na semana", sessoes_semana: 2, sessoes_mes: 8, periodicidade: "mensal", valor: 380, ativo: true },
+    { id: "p3", estudio_id: est.id, nome: "Plano 3x na semana", sessoes_semana: 3, sessoes_mes: 12, periodicidade: "mensal", valor: 490, ativo: true },
+    { id: "p4", estudio_id: est.id, nome: "Trimestral 2x na semana", sessoes_semana: 2, sessoes_mes: 8, periodicidade: "trimestral", valor: 1020, ativo: true },
+    { id: "p5", estudio_id: est.id, nome: "Anual 3x na semana", sessoes_semana: 3, sessoes_mes: 12, periodicidade: "anual", valor: 4680, ativo: true },
   ];
   const nomes = [
     ["Ana Paula Ribeiro", "34991110001", "Emagrecimento", "p2", true],
-    ["Carlos Eduardo Melo", "34991110002", "Fortalecimento muscular", "p2", true],
+    ["Carlos Eduardo Melo", "34991110002", "Fortalecimento muscular", "p4", true],
     ["Juliana Faria", "34991110003", "Reabilitação ou alívio de dor", "p3", true],
     ["Marcos Vinicius Dias", "34991110004", "Condicionamento físico", "p1", true],
     ["Beatriz Camargo", "34991110005", "Emagrecimento", "p2", false],
-    ["Rafael Andrade", "34991110006", "Fortalecimento muscular", "p3", true],
-    ["Larissa Nunes", "34991110007", "Emagrecimento", "p1", true],
+    ["Rafael Andrade", "34991110006", "Fortalecimento muscular", "p5", true],
+    ["Larissa Nunes", "34991110007", "Emagrecimento", "p4", true],
     ["Tiago Moreira", "34991110008", "Condicionamento físico", "p2", true],
   ];
   const alunos = [];
   const matriculas = [];
+
+  /* Espalha os vencimentos em volta de hoje para que a demonstracao
+     sempre tenha alguem pendente, alguem vencendo na semana e alguem
+     mais adiante, sem inventar datas que briguem com o dia do plano.
+
+     A conta so corre entre os planos mensais, que sao cobrados todos os
+     meses. Trimestral e anual passam meses inteiros sem cobranca aberta,
+     entao pegam um dia fixo e nao gastam um dos casos. */
+  let mensalDemo = 0;
+  const diaVencimentoDemo = (periodicidade) => {
+    if (periodicidade !== "mensal") return 10;
+    const desloc = [-14, 3, -5, 8][mensalDemo++ % 4];
+    return Math.min(28, Math.max(1, hoje().getDate() + desloc));
+  };
   // alguns aniversarios neste mes, para a demonstracao mostrar o bloco
   const mesAtual = new Date().getMonth();
   const aniversarios = {
@@ -113,8 +135,9 @@ function semear() {
       const plano = planos.find((p) => p.id === n[3]);
       matriculas.push({
         id: "m" + (i + 1), estudio_id: est.id, aluno_id: id, plano_id: plano.id,
-        inicio: iso(somarDias(hoje(), -60 - i * 5)), fim: null,
-        dia_vencimento: [5, 10, 15, 20][i % 4], valor: plano.valor, status: "ativa",
+        inicio: iso(somarMeses(hoje(), -(4 + (i % 3)))), fim: null,
+        dia_vencimento: diaVencimentoDemo(plano.periodicidade),
+        periodicidade: plano.periodicidade, valor: plano.valor, status: "ativa",
       });
     }
   });
@@ -140,20 +163,49 @@ function semear() {
     });
   }
 
-  // cobrancas do mes atual e do anterior
+  // cobrancas dos ultimos meses, respeitando o ciclo de cada plano,
+  // e o historico de pagamentos correspondente
   const cobrancas = [];
-  [-1, 0].forEach((offset) => {
-    const comp = primeiroDoMes(new Date(base.getFullYear(), base.getMonth() + offset, 1));
-    matriculas.forEach((m, i) => {
-      const venc = new Date(comp.getFullYear(), comp.getMonth(), m.dia_vencimento);
-      const atrasada = offset === 0 && i % 4 === 0;
+  const pagamentos = [];
+  const FORMAS_DEMO = ["Pix", "Cartão", "Dinheiro", "Transferência"];
+
+  // contador das cobrancas que caem no mes atual, para distribuir as
+  // situacoes entre elas: pendente, vencendo agora, paga e a vencer
+  let noMesAtual = 0;
+
+  matriculas.forEach((m, i) => {
+    for (let offset = -6; offset <= 0; offset++) {
+      const comp = primeiroDoMes(new Date(base.getFullYear(), base.getMonth() + offset, 1));
+      if (comp < primeiroDoMes(m.inicio)) continue;
+      if (!competenciaCaiNoCiclo(comp, m.inicio, m.periodicidade)) continue;
+
+      const doMesAtual = offset === 0;
+      const venc = vencimentoNoMes(comp, m.dia_vencimento);
+
+      // o passado esta quitado; no mes corrente, parte ja foi paga
+      const paga = !doMesAtual || noMesAtual++ % 3 === 2;
+      // o passado nao recebe pagamento com data futura
+      const pagoBruto = somarDias(venc, -(i % 3));
+      const pagoEm = paga ? iso(pagoBruto > base ? base : pagoBruto) : null;
+      const forma = paga ? FORMAS_DEMO[i % FORMAS_DEMO.length] : null;
+      const id = novoId();
+
       cobrancas.push({
-        id: novoId(), estudio_id: est.id, aluno_id: m.aluno_id, matricula_id: m.id,
-        competencia: iso(comp), vencimento: iso(offset === 0 && atrasada ? somarDias(base, -6) : venc),
-        valor: m.valor, status: offset === -1 ? "paga" : atrasada ? "aberta" : i % 3 === 0 ? "paga" : "aberta",
-        pago_em: offset === -1 ? iso(venc) : null, forma: offset === -1 ? "Pix" : null, observacao: "",
+        id, estudio_id: est.id, aluno_id: m.aluno_id, matricula_id: m.id,
+        competencia: iso(comp), competencia_fim: iso(fimDaCompetencia(comp, m.periodicidade)),
+        periodicidade: m.periodicidade, vencimento: iso(venc), valor: m.valor,
+        status: paga ? "paga" : "aberta", pago_em: pagoEm, forma, observacao: "",
       });
-    });
+
+      if (paga) {
+        pagamentos.push({
+          id: novoId(), estudio_id: est.id, cobranca_id: id, aluno_id: m.aluno_id,
+          valor: m.valor, pago_em: pagoEm, forma, observacao: "",
+          estornado: false, estornado_em: null,
+          registrado_em: new Date(pagoEm + "T12:00:00").toISOString(),
+        });
+      }
+    }
   });
 
   const solicitacoes = [
@@ -161,16 +213,21 @@ function semear() {
     { id: novoId(), estudio_id: est.id, nome: "Pedro Henrique Souza", telefone: "34991110011", objetivo: "Ainda não sei, quero entender", periodo: "Manha, 07h as 12h", origem: "site", status: "nova", criado_em: somarDias(new Date(), -1).toISOString() },
   ];
 
-  return { estudio: est, planos, alunos, matriculas, sessoes, cobrancas, solicitacoes };
+  return { estudio: est, planos, alunos, matriculas, sessoes, cobrancas, pagamentos, solicitacoes };
 }
 
 function carregarDemo() {
   if (demo) return demo;
   try {
+    CHAVES_ANTIGAS.forEach((k) => localStorage.removeItem(k));
     const bruto = localStorage.getItem(CHAVE);
     if (bruto) {
-      demo = JSON.parse(bruto);
-      return demo;
+      const lido = JSON.parse(bruto);
+      // guarda contra um dado gravado por uma versao incompleta
+      if (lido && Array.isArray(lido.cobrancas) && Array.isArray(lido.pagamentos)) {
+        demo = lido;
+        return demo;
+      }
     }
   } catch (e) {
     /* dado corrompido, comeca de novo */
@@ -327,7 +384,7 @@ export async function listarPlanos({ apenasAtivos = false } = {}) {
     return l;
   }
   const c = await sb();
-  let q = c.from("planos").select("*").order("sessoes_semana");
+  let q = c.from("planos").select("*").order("periodicidade").order("sessoes_semana");
   if (apenasAtivos) q = q.eq("ativo", true);
   return erro(await q);
 }
@@ -573,7 +630,15 @@ export async function salvarCobranca(dados) {
 }
 
 /* Cria as mensalidades do mes para quem tem matricula ativa.
-   Roda quantas vezes quiser, nao duplica. */
+   Roda quantas vezes quiser, nao duplica.
+
+   Quem esta em plano trimestral ou anual so e cobrado nos meses do
+   proprio ciclo, contados a partir do inicio da matricula. Um trimestral
+   que comecou em janeiro e cobrado em janeiro, abril, julho e outubro.
+   Nos meses de intervalo ele ja esta pago e nao entra na geracao.
+
+   Devolve quantas foram criadas e quantas ficaram de fora por estarem
+   no meio de um ciclo ja pago. */
 export async function gerarCobrancasDoMes(competencia) {
   const comp = primeiroDoMes(competencia);
   const compIso = iso(comp);
@@ -589,19 +654,116 @@ export async function gerarCobrancasDoMes(competencia) {
     ativas = erro(await c.from("matriculas").select("*").eq("status", "ativa"));
   }
 
-  const criar = ativas.filter((m) => !jaTem.has(m.id));
+  const pendentes = ativas.filter((m) => !jaTem.has(m.id));
+  // ja comecou, e o mes cai no ciclo do plano
+  const criar = pendentes.filter((m) =>
+    primeiroDoMes(m.inicio) <= comp && competenciaCaiNoCiclo(comp, m.inicio, m.periodicidade));
+
   for (const m of criar) {
-    const venc = new Date(comp.getFullYear(), comp.getMonth(), m.dia_vencimento);
     await salvarCobranca({
       aluno_id: m.aluno_id,
       matricula_id: m.id,
       competencia: compIso,
-      vencimento: iso(venc),
+      competencia_fim: iso(fimDaCompetencia(comp, m.periodicidade)),
+      periodicidade: m.periodicidade || "mensal",
+      vencimento: iso(vencimentoNoMes(comp, m.dia_vencimento)),
       valor: m.valor,
       status: "aberta",
     });
   }
-  return criar.length;
+
+  const noMeioDoCiclo = pendentes.length - criar.length;
+  return { criadas: criar.length, noMeioDoCiclo };
+}
+
+/* ===================================================
+   Historico de pagamentos
+
+   Dar baixa grava uma linha aqui e marca a cobranca como paga.
+   Desfazer nao apaga a linha, marca como estornada, entao o
+   historico continua mostrando o que aconteceu de verdade.
+   =================================================== */
+
+export async function registrarPagamento({ cobranca, pago_em, forma, observacao = "" }) {
+  const dados = {
+    cobranca_id: cobranca.id,
+    aluno_id: cobranca.aluno_id,
+    valor: Number(cobranca.valor || 0),
+    pago_em,
+    forma,
+    observacao,
+  };
+
+  if (DEMO) {
+    const d = carregarDemo();
+    d.pagamentos.push(Object.assign({
+      id: novoId(), estudio_id: "estudio-demo",
+      estornado: false, estornado_em: null, registrado_em: new Date().toISOString(),
+    }, dados));
+    salvarDemo();
+  } else {
+    const c = await sb();
+    const estudio = await estudioId();
+    erro(await c.from("pagamentos").insert({ ...dados, estudio_id: estudio }).select().single());
+  }
+
+  const atualizacao = { id: cobranca.id, status: "paga", pago_em, forma };
+  // so escreve a observacao quando ha texto, para nao apagar uma nota anterior
+  if (observacao) atualizacao.observacao = observacao;
+  return salvarCobranca(atualizacao);
+}
+
+/* Desfaz a baixa: a cobranca volta a ficar aberta e o pagamento fica
+   no historico marcado como estornado. */
+export async function estornarPagamento(cobrancaId) {
+  const agora = new Date().toISOString();
+
+  if (DEMO) {
+    const d = carregarDemo();
+    d.pagamentos
+      .filter((x) => x.cobranca_id === cobrancaId && !x.estornado)
+      .forEach((x) => { x.estornado = true; x.estornado_em = agora; });
+    salvarDemo();
+  } else {
+    const c = await sb();
+    erro(await c.from("pagamentos")
+      .update({ estornado: true, estornado_em: agora })
+      .eq("cobranca_id", cobrancaId).eq("estornado", false).select());
+  }
+
+  return salvarCobranca({ id: cobrancaId, status: "aberta", pago_em: null, forma: null });
+}
+
+export async function pagamentosDoAluno(alunoId, limite = 24) {
+  if (DEMO) {
+    const d = carregarDemo();
+    return clonar(d.pagamentos)
+      .filter((x) => x.aluno_id === alunoId)
+      .sort((a, b) => b.pago_em.localeCompare(a.pago_em) || b.registrado_em.localeCompare(a.registrado_em))
+      .slice(0, limite);
+  }
+  const c = await sb();
+  return erro(
+    await c.from("pagamentos").select("*").eq("aluno_id", alunoId)
+      .order("pago_em", { ascending: false }).limit(limite)
+  );
+}
+
+/* Tudo que entrou entre duas datas, para a aba de historico do financeiro */
+export async function pagamentosEntre(inicio, fim) {
+  const de = iso(inicio), ate = iso(fim);
+  if (DEMO) {
+    const d = carregarDemo();
+    return clonar(d.pagamentos)
+      .filter((x) => x.pago_em >= de && x.pago_em <= ate)
+      .map((x) => Object.assign(x, { aluno: clonar(d.alunos.find((a) => a.id === x.aluno_id) || {}) }))
+      .sort((a, b) => b.pago_em.localeCompare(a.pago_em));
+  }
+  const c = await sb();
+  return erro(
+    await c.from("pagamentos").select("*, aluno:alunos(id, nome, telefone)")
+      .gte("pago_em", de).lte("pago_em", ate).order("pago_em", { ascending: false })
+  );
 }
 
 /* ===================================================
@@ -649,7 +811,7 @@ export async function resumo() {
 
   const hojeIso = iso(inicioHoje);
   const atrasadas = abertas.filter((c) => c.vencimento < hojeIso);
-  const venceSemana = abertas.filter((c) => c.vencimento >= hojeIso && c.vencimento <= iso(somarDias(inicioHoje, 7)));
+  const venceSemana = abertas.filter((c) => c.vencimento >= hojeIso && c.vencimento <= iso(somarDias(inicioHoje, DIAS_PROXIMA)));
 
   const inicioMes = primeiroDoMes(inicioHoje);
   const doMes = await cobrancasDoMes(inicioMes);

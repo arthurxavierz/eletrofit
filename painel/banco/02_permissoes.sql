@@ -31,6 +31,7 @@ alter table planos        enable row level security;
 alter table matriculas    enable row level security;
 alter table sessoes       enable row level security;
 alter table cobrancas     enable row level security;
+alter table pagamentos    enable row level security;
 alter table solicitacoes  enable row level security;
 
 -- ---------------------------------------------------
@@ -57,7 +58,7 @@ create policy perfis_ler on perfis
 do $$
 declare t text;
 begin
-  foreach t in array array['alunos','planos','matriculas','sessoes','cobrancas'] loop
+  foreach t in array array['alunos','planos','matriculas','sessoes','cobrancas','pagamentos'] loop
     execute format('drop policy if exists %I_tudo on %I', t, t);
     execute format(
       'create policy %I_tudo on %I for all to authenticated

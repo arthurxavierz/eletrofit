@@ -31,7 +31,8 @@ painel/
 ├── banco/
 │   ├── 01_tabelas.sql        As tabelas
 │   ├── 02_permissoes.sql     Quem pode ver o quê
-│   └── 03_primeiro_acesso.sql Cria o estúdio e liga o seu usuário
+│   ├── 03_primeiro_acesso.sql Cria o estúdio e liga o seu usuário
+│   └── 04_planos_e_pagamentos.sql Periodicidade dos planos e histórico
 ├── img/
 │   └── eletrofit-raio.png
 └── js/
@@ -82,6 +83,12 @@ São seis etapas. Do começo ao fim leva perto de uma hora na primeira vez.
    editor e clique em Run.
 3. Faça o mesmo com o `banco/02_permissoes.sql`.
 4. Ainda não rode o arquivo 03. Ele é a próxima etapa.
+
+Quem já tinha o banco no ar antes da periodicidade dos planos precisa rodar
+também o `banco/04_planos_e_pagamentos.sql`. Ele acrescenta a periodicidade, cria
+o histórico de pagamentos e não apaga nada: todo plano que já existia continua
+mensal, e as baixas antigas entram no histórico. Em uma instalação nova o arquivo
+01 já traz tudo isso, e rodar o 04 depois também não faz mal.
 
 Se aparecer erro, leia a mensagem: quase sempre é um arquivo rodado fora de
 ordem. Rodar de novo o mesmo arquivo não faz mal, ele foi escrito para isso.
@@ -176,11 +183,17 @@ Pronto. O sistema está no ar.
 1. Entre no painel e vá em **Ajustes**. Confira quantos alunos o estúdio atende
    ao mesmo tempo, a duração da sessão, o intervalo de recuperação, o horário e
    os dias de atendimento.
-2. Ainda em Ajustes, cadastre os planos com os valores reais.
+2. Ainda em Ajustes, cadastre os planos com os valores reais. Cada plano diz se
+   a cobrança é **mensal**, **trimestral** ou **anual**, e o valor é sempre o do
+   ciclo inteiro: em um trimestral, o valor dos três meses de uma vez. A tela
+   mostra o equivalente por mês para você comparar planos.
 3. Vá em **Alunos** e cadastre quem já treina. Para cada um, abra a ficha,
-   preencha a saúde e defina o plano com o dia de vencimento.
+   preencha a saúde e defina o plano com o dia de vencimento. A ficha passa a
+   mostrar o plano, a periodicidade e a data da próxima cobrança.
 4. Vá em **Financeiro** e clique em **Gerar mensalidades**. O sistema cria a
-   cobrança do mês para todo mundo que tem plano ativo. Pode clicar de novo sem
+   cobrança do mês para quem tem plano ativo **cujo ciclo cai naquele mês**.
+   Quem está no meio de um trimestre ou de um ano já pago não recebe cobrança, e
+   o aviso diz quantos ficaram de fora por esse motivo. Pode clicar de novo sem
    medo, ele não duplica.
 5. Vá em **Agenda** e marque os treinos da semana.
 
@@ -188,8 +201,14 @@ Pronto. O sistema está no ar.
 
 - **Todo dia**, abra a tela **Hoje**. Ela mostra quem vem, quem está em atraso e
   quantos pedidos novos chegaram do site. Marque presença ou falta na hora.
-- **Toda semana**, olhe o **Financeiro**. Quem está em atraso tem um botão de
-  cobrar que abre o WhatsApp com a mensagem já escrita.
+- **Toda semana**, olhe o **Financeiro**. As abas separam o que está
+  **pendente** (já venceu), o que é **próxima** (vence em até sete dias) e o
+  restante em aberto. Pendente traz o botão **Cobrar** e próxima o botão
+  **Lembrar**, os dois abrindo o WhatsApp com a mensagem já escrita.
+- **Ao receber**, clique em **Recebi** e informe **como** o aluno pagou e **em
+  que dia**. A data vem preenchida com hoje, mas dá para registrar um
+  recebimento de ontem. Isso fica guardado no histórico de pagamentos, que você
+  vê na aba **Histórico** do Financeiro e na ficha de cada aluno.
 - **Todo começo de mês**, clique em **Gerar mensalidades**.
 - **Quando chegar um pedido pelo site**, ele aparece em **Pedidos**. Dali dá
   para responder no WhatsApp e transformar em aluno com um clique.
