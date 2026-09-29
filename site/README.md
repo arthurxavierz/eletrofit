@@ -22,7 +22,10 @@ passo de publicação no README de lá.
 site/
 ├── index.html      A página inteira, em seções
 ├── styles.css      Estilos. Base clara, acentos em ouro
-├── script.js       Menu, galeria, mapa, animações, dúvidas e envio ao WhatsApp
+├── script.js       Menu, galeria, mapa, animações, dúvidas e agenda da aula experimental
+├── confirmar.html  Página que o aluno abre pelo link do WhatsApp para confirmar a aula
+├── confirmar.js    Resposta Vou ou Não vou, com a regra do prazo vinda do banco
+├── confirmar.css   Estilos só da página de confirmação
 ├── config.js       Ligação com o painel, opcional
 ├── favicon.png     Ícone da aba, recortado do raio da marca
 └── img/
@@ -63,7 +66,7 @@ DNS e envie os arquivos da pasta como estão.
 | Benefícios | Seis ganhos da eletroestimulação, em uma linha cada |
 | Estúdio | Fotos reais com ampliação, setas de navegação e legendas |
 | Dúvidas | Quatro perguntas, incluindo contraindicações |
-| Agendar | Formulário que monta a mensagem e abre o WhatsApp |
+| Agendar | Agenda com os dias e horários livres, dados de contato e envio do pedido |
 | Contato | Telefone, Instagram, horário, rota e mapa sob demanda |
 
 A barra de navegação tem dois estados. Sobre a foto do topo ela é invisível: só o
@@ -72,9 +75,35 @@ borda. Ao passar do topo, ela vira uma barra preta fixa, mais baixa, com as
 escritas em branco. A troca é feita por IntersectionObserver, no `script.js`.
 No celular ela vira logotipo mais menu, com o painel também escuro.
 
-O formulário tem quatro campos (nome, celular, objetivo e período). Ele valida,
+A agenda mostra as próximas três semanas de atendimento. Cada dia diz quantos
+horários estão livres e, ao escolher o dia, aparecem os horários da manhã, tarde e
+noite. Com o `config.js` preenchido, a ocupação vem do painel pela função
+`agenda_publica` do banco, que devolve só os horários tomados, nunca nomes. Um
+pedido novo já segura o horário, para dois visitantes não escolherem o mesmo. Com
+o `config.js` vazio, a agenda usa o horário padrão do estúdio, todos livres, e o
+pedido segue pelo WhatsApp. Se a agenda estiver desligada em Ajustes, o formulário
+volta a pedir só o período.
+
+Com o painel ligado, o pedido é gravado e a pessoa vê a confirmação na hora, com
+um botão opcional para falar no WhatsApp. Se a gravação falhar, o WhatsApp abre
+com a mensagem pronta, então ninguém fica sem atendimento.
+
+O formulário antigo tinha quatro campos (nome, celular, objetivo e período). Ele valida,
 associa os erros aos campos, foca o primeiro erro e abre o WhatsApp com a mensagem
 pronta. Um link alternativo permite continuar se o navegador bloquear a nova aba.
+
+## Movimento
+
+O topo monta o nome letra por letra, com uma faísca no FIT e uma linha de pulso
+elétrico que atravessa a foto. A foto desce mais devagar que a página ao rolar.
+Uma barra amarela no alto mostra quanto da página já foi lida. Os títulos ganham
+um marca-texto amarelo quando aparecem, o método tem um trilho que enche com a
+rolagem, os benefícios acendem onde o mouse passa, as fotos abrem como cortina, a
+chamada amarela tem raios correndo e as dúvidas abrem deslizando. Os botões
+principais seguem de leve o mouse.
+
+Tudo isso desliga com a preferência de redução de movimento do sistema, e o
+conteúdo continua inteiro, parado.
 
 A galeria usa um diálogo nativo, aceita as setas do teclado e fecha com Escape.
 O menu fechado fica fora da navegação por teclado. As animações respeitam a

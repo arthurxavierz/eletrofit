@@ -5,6 +5,8 @@ import { el, limpar, hora, dinheiro, dataBr, primeiroNome, iniciais, DIAS, situa
 import { aviso, etiqueta, vazio, botaoIcone, botaoComIcone, icone } from "../ui.js";
 import { abrirFicha, abrirWhats, textoCobranca } from "./ficha.js";
 import { abrirNovaSessao, abrirAcoesSessao } from "./sessao.js";
+import { situacaoConfirmacao } from "../confirmacao.js";
+import { estado } from "../estado.js";
 
 function cartaoNumero(valor, rotulo, tom = "") {
   return el("div", { class: "numero " + (tom ? "numero--" + tom : "") }, [
@@ -56,6 +58,21 @@ export async function montar(raiz) {
 
   /* avisos */
   const avisos = [];
+  const semResposta = dados.sessoesHoje.filter((s) => s.status === "agendada" && !s.confirmacao && new Date(s.inicio) > agora);
+  if (semResposta.length) {
+    avisos.push({
+      texto: semResposta.length > 1
+        ? `${semResposta.length} alunos com aula hoje ainda não confirmaram`
+        : "1 aluno com aula hoje ainda não confirmou",
+      acao: "Confirmar", destino: "#confirmacoes",
+    });
+  }
+  if (dados.reposicoes && dados.reposicoes.length) {
+    avisos.push({
+      texto: `${dados.reposicoes.length} reposiç${dados.reposicoes.length > 1 ? "ões" : "ão"} de aula para marcar`,
+      acao: "Ver reposições", destino: "#confirmacoes",
+    });
+  }
   if (dados.solicitacoes.length) {
     avisos.push({
       texto: `${dados.solicitacoes.length} pedido${dados.solicitacoes.length > 1 ? "s" : ""} de aula experimental esperando resposta`,
@@ -97,7 +114,8 @@ export async function montar(raiz) {
       el("ul", { class: "sessoes" }, doDia.map((s) => {
         const aluno = s.aluno || {};
         const passou = new Date(s.inicio) < agora;
-        const linha = el("li", { class: "sessao " + (s.status === "realizada" ? "sessao--feita" : s.status === "falta" ? "sessao--falta" : passou ? "sessao--passou" : "") }, [
+        const conf = s.status === "agendada" ? situacaoConfirmacao(s, estado.perfil.estudio).chave : "";
+        const linha = el("li", { "data-conf": conf, class: "sessao " + (s.status === "realizada" ? "sessao--feita" : s.status === "falta" ? "sessao--falta" : passou ? "sessao--passou" : "") }, [
           el("div", { class: "sessao__hora" }, [
             el("strong", { texto: hora(s.inicio) }),
             el("span", { texto: (s.duracao || 30) + " min" }),
@@ -106,7 +124,11 @@ export async function montar(raiz) {
             el("span", { class: "avatar avatar--peq", texto: iniciais(aluno.nome) }),
             el("div", {}, [
               el("strong", { texto: aluno.nome || "Aluno" }),
-              el("span", { texto: aluno.saude_liberado === false ? "Ficha de saúde pendente" : (s.intensidade || "Sem anotação") }),
+              el("span", { texto: [
+                s.status === "agendada" ? situacaoConfirmacao(s, estado.perfil.estudio).rotulo : null,
+                aluno.saude_liberado === false ? "Ficha de saúde pendente" : (s.intensidade || null),
+                s.experimental ? "Experimental" : null,
+              ].filter(Boolean).join(" · ") || "Sem anotação" }),
             ]),
           ]),
           el("div", { class: "sessao__acoes" },

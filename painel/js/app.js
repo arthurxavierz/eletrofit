@@ -7,6 +7,7 @@ import { estado } from "./estado.js";
 
 import * as telaHoje from "./telas/hoje.js";
 import * as telaAgenda from "./telas/agenda.js";
+import * as telaConfirmacoes from "./telas/confirmacoes.js";
 import * as telaAlunos from "./telas/alunos.js";
 import * as telaFinanceiro from "./telas/financeiro.js";
 import * as telaSolicitacoes from "./telas/solicitacoes.js";
@@ -15,6 +16,7 @@ import * as telaAjustes from "./telas/ajustes.js";
 export const TELAS = [
   { id: "hoje", nome: "Hoje", modulo: telaHoje, icone: "M4 6h16M4 12h16M4 18h10" },
   { id: "agenda", nome: "Agenda", modulo: telaAgenda, icone: "M7 3v3M17 3v3M3 9h18M5 5h14v16H5z" },
+  { id: "confirmacoes", nome: "Confirmar", modulo: telaConfirmacoes, icone: "M9 11l2.5 2.5L16 9M4 5h16v11H8l-4 4z" },
   { id: "alunos", nome: "Alunos", modulo: telaAlunos, icone: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21c0-4 3.6-6 8-6s8 2 8 6" },
   { id: "financeiro", nome: "Financeiro", modulo: telaFinanceiro, icone: "M3 7h18v12H3zM3 11h18M7 15h4" },
   { id: "solicitacoes", nome: "Pedidos", modulo: telaSolicitacoes, icone: "M4 5h16v11H8l-4 4z" },

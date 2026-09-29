@@ -70,3 +70,35 @@ Antes da publicação, validar em um ambiente de homologação: login real,
 persistência de alterações e um pedido público aparecendo em Pedidos. A auditoria
 em DESIGN.md registra um ponto preexistente na política RLS de solicitações que
 merece verificação. WhatsApp e mapa dependem dos serviços externos.
+
+## Confirmação de aulas, reposição e agenda do site
+
+Use o mesmo navegador para o painel e o site: na demonstração os dois
+compartilham os dados guardados no navegador, e dá para testar o caminho inteiro.
+
+1. No painel, entre na demonstração e abra **Confirmar**. Hoje e Amanhã mostram
+   quantos ainda não responderam. A barra colorida resume confirmados, sem
+   resposta e quem não vem.
+2. Toque em **Enviar para N**. A janela mostra um aluno por vez, com a mensagem e
+   o link. Abrir a conversa passa para o próximo; **Pular** também. No fim, a
+   linha de cada um mostra a hora em que a mensagem saiu.
+3. Copie um link de confirmação da mensagem e abra em outra aba. Responda
+   **Sim**: a aula fica confirmada no painel. Em outra aula, responda **Não** e
+   confirme: a aula sai da agenda e entra em **Reposições para marcar**. Abra o
+   mesmo link de novo: ele diz que a aula já foi desmarcada.
+4. Em uma aula sem resposta, use **Não vem**. O painel sugere a opção conforme o
+   prazo (3 horas antes), mas as duas ficam disponíveis.
+5. Em **Reposições para marcar**, clique em **Marcar reposição**. A reposição sai
+   da lista. **Dispensar** tira da lista sem marcar.
+6. No site, vá até **Agendar**. Envie vazio: aparece o aviso de escolher dia e
+   horário. Escolha um dia, um horário e preencha os dados. O resumo mostra a
+   aula escolhida. Envie: sem Supabase, o WhatsApp abre e a tela de pedido
+   enviado aparece.
+7. Volte ao painel, em **Pedidos**. O pedido mostra o dia e a hora pedidos.
+   **Confirmar horário** permite trocar o horário, cadastra o aluno experimental,
+   põe a aula na agenda com a etiqueta experimental e abre o WhatsApp.
+8. Em **Ajustes**, mude o prazo para desmarcar e desligue a agenda do site. No
+   site, o formulário volta a pedir o período.
+9. Com o banco ligado, rode o arquivo 05 e repita os passos 3, 6 e 7. A regra do
+   prazo passa a ser do banco: responder Não depois do prazo desmarca sem
+   reposição, mesmo que o relógio do celular esteja errado.

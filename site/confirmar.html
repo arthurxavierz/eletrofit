@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmar aula | Eletrofit Estúdio</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#171918">
+<meta name="referrer" content="no-referrer">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="confirmar.css?v=1">
+<link rel="icon" type="image/png" href="favicon.png?v=1">
+</head>
+<body class="conf-page">
+
+<main class="conf">
+  <a class="conf__marca" href="./" aria-label="Eletrofit Estúdio, página inicial">
+    <img src="img/eletrofit-raio.png" alt="" width="40" height="44">
+    <span>ELETRO<span>FIT</span></span>
+  </a>
+
+  <section class="conf__cartao" id="cartao" aria-live="polite">
+    <div class="conf__carregando" id="estadoCarregando">
+      <span class="conf__spinner" aria-hidden="true"></span>
+      <p>Buscando a sua aula</p>
+    </div>
+
+    <div id="estadoPergunta" hidden>
+      <span class="conf__kicker">Confirmação de aula</span>
+      <h1 id="saudacao">Oi!</h1>
+      <div class="conf__quando">
+        <span class="conf__dia" id="quandoDia"></span>
+        <strong class="conf__hora" id="quandoHora"></strong>
+        <span class="conf__dur" id="quandoDur"></span>
+      </div>
+      <p class="conf__pergunta">Você vem para a aula?</p>
+      <div class="conf__botoes">
+        <button type="button" class="btn btn--primary btn--lg" id="btSim">Sim, estarei lá</button>
+        <button type="button" class="btn btn--ghost btn--lg" id="btNao">Não vou conseguir</button>
+      </div>
+      <p class="conf__prazo" id="prazo"></p>
+    </div>
+
+    <div id="estadoCertezaNao" hidden>
+      <span class="conf__kicker">Desmarcar aula</span>
+      <h1>Tem certeza?</h1>
+      <p class="conf__texto" id="certezaTexto"></p>
+      <div class="conf__botoes">
+        <button type="button" class="btn btn--dark btn--lg" id="btConfirmaNao">Sim, desmarcar</button>
+        <button type="button" class="btn btn--ghost btn--lg" id="btVoltar">Voltar</button>
+      </div>
+    </div>
+
+    <div id="estadoFim" hidden>
+      <span class="conf__selo" id="fimSelo" aria-hidden="true">
+        <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27 l7 7 l15 -16"/></svg>
+      </span>
+      <h1 id="fimTitulo"></h1>
+      <p class="conf__texto" id="fimTexto"></p>
+      <a class="btn btn--primary" id="fimWhats" target="_blank" rel="noopener" hidden>Falar com o estúdio <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+
+  <p class="conf__rodape">Eletrofit Estúdio · Av. Jacinto Barbosa, 622 · Patrocínio, MG</p>
+</main>
+
+<script src="config.js?v=1"></script>
+<script src="confirmar.js?v=1" defer></script>
+</body>
+</html>

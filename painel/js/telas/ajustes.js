@@ -84,6 +84,20 @@ export async function montar(raiz) {
     ])
   );
 
+  // os campos abaixo so existem depois do arquivo 05 do banco
+  const temConfirmacao = "antecedencia_cancelamento" in estudio;
+  if (temConfirmacao) {
+    form.append(el("div", { class: "form__par" }, [
+      campo("Desmarcar com reposição até", entradaSelecao("antecedencia_cancelamento",
+        [0, 1, 2, 3, 4, 6, 12, 24].map((v) => ({ valor: v, texto: v ? `${v} hora${v === 1 ? "" : "s"} antes` : "Qualquer hora" })),
+        estudio.antecedencia_cancelamento ?? 3), "Quem avisa depois disso fica sem reposição"),
+      campo("Agenda no site", entradaSelecao("agenda_no_site", [
+        { valor: "true", texto: "Mostrar horários livres" },
+        { valor: "false", texto: "Esconder, só o formulário" },
+      ], String(estudio.agenda_no_site ?? true)), "Onde o visitante escolhe a aula experimental"),
+    ]));
+  }
+
   const marcados = new Set((estudio.dias_semana || []).map(Number));
   const dias = el("div", { class: "dias" }, DIAS.map((nome, i) => {
     const marca = el("input", { type: "checkbox", class: "marcador", value: i });
@@ -101,12 +115,17 @@ export async function montar(raiz) {
     const escolhidos = [...dias.querySelectorAll("input:checked")].map((i) => Number(i.value));
     bt.disabled = true;
     try {
-      const salvo = await salvarEstudio({
+      const dados = {
         nome: d.nome, whatsapp: d.whatsapp, endereco: d.endereco,
         capacidade: Number(d.capacidade), duracao_padrao: Number(d.duracao_padrao),
         intervalo_recuperacao: Number(d.intervalo_recuperacao),
         abre: d.abre, fecha: d.fecha, dias_semana: escolhidos,
-      });
+      };
+      if (temConfirmacao) {
+        dados.antecedencia_cancelamento = Number(d.antecedencia_cancelamento);
+        dados.agenda_no_site = d.agenda_no_site === "true";
+      }
+      const salvo = await salvarEstudio(dados);
       estado.perfil.estudio = salvo;
       aviso("Ajustes salvos.");
       recarregar();

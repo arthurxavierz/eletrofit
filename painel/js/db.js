@@ -80,6 +80,9 @@ function semear() {
     abre: "07:00",
     fecha: "20:30",
     dias_semana: [1, 2, 3, 4, 5],
+    antecedencia_cancelamento: 3,
+    fuso: "America/Sao_Paulo",
+    agenda_no_site: true,
   };
   const planos = [
     { id: "p1", estudio_id: est.id, nome: "Plano 1x na semana", sessoes_semana: 1, sessoes_mes: 4, periodicidade: "mensal", valor: 240, ativo: true },
@@ -142,6 +145,22 @@ function semear() {
     }
   });
 
+  /* Respostas de exemplo: hoje e amanha com gente que ja confirmou,
+     alguem que ainda nao respondeu e alguem que avisou que nao vem,
+     para a tela de confirmacoes ter o que mostrar. */
+  const confirmacaoDemo = (d, idx, inicio) => {
+    const base = {
+      confirmacao: null, confirmacao_por: null, confirmacao_em: null, aviso_enviado_em: null,
+      reposicao_direito: false, reposicao_dispensada: false, reposicao_de: null, experimental: false,
+    };
+    if (d < 0 || d > 1) return base;
+    const antes = (h) => new Date(inicio.getTime() - h * 36e5).toISOString();
+    if (idx % 3 === 0) return { ...base, aviso_enviado_em: antes(20), confirmacao: "confirmada", confirmacao_por: "aluno", confirmacao_em: antes(18) };
+    if (idx === 4 && d === 1) return { ...base, aviso_enviado_em: antes(20), confirmacao: "recusada", confirmacao_por: "aluno", confirmacao_em: antes(19), reposicao_direito: true, status: "cancelada" };
+    if (idx % 3 === 1) return { ...base, aviso_enviado_em: antes(20) };
+    return base;
+  };
+
   // agenda dos ultimos e proximos dias
   const sessoes = [];
   const base = hoje();
@@ -155,10 +174,11 @@ function semear() {
       const inicio = new Date(dia);
       inicio.setHours(h, idx % 2 === 0 ? 0 : 30, 0, 0);
       sessoes.push({
-        id: novoId(), estudio_id: est.id, aluno_id: aluno.id,
+        id: novoId(), token: novoId(), estudio_id: est.id, aluno_id: aluno.id,
         inicio: inicio.toISOString(), duracao: 30,
         status: d < 0 ? (idx === 2 ? "falta" : "realizada") : "agendada",
         intensidade: d < 0 ? "Nivel 6, pernas 7" : "", observacao: "",
+        ...confirmacaoDemo(d, idx, inicio),
       });
     });
   }
@@ -209,11 +229,29 @@ function semear() {
   });
 
   const solicitacoes = [
-    { id: novoId(), estudio_id: est.id, nome: "Fernanda Lopes", telefone: "34991110010", objetivo: "Emagrecimento", periodo: "Noite, 18h as 20h30", origem: "site", status: "nova", criado_em: new Date().toISOString() },
+    { id: novoId(), estudio_id: est.id, nome: "Fernanda Lopes", telefone: "34991110010", objetivo: "Emagrecimento", periodo: "", data_desejada: iso(proximoDiaUtil(2)), horario_desejado: "18:30", origem: "site", status: "nova", criado_em: new Date().toISOString() },
     { id: novoId(), estudio_id: est.id, nome: "Pedro Henrique Souza", telefone: "34991110011", objetivo: "Ainda não sei, quero entender", periodo: "Manha, 07h as 12h", origem: "site", status: "nova", criado_em: somarDias(new Date(), -1).toISOString() },
   ];
 
   return { estudio: est, planos, alunos, matriculas, sessoes, cobrancas, pagamentos, solicitacoes };
+}
+
+function proximoDiaUtil(depois) {
+  let d = somarDias(hoje(), depois);
+  while (d.getDay() === 0 || d.getDay() === 6) d = somarDias(d, 1);
+  return d;
+}
+
+/* Demonstracoes gravadas antes das confirmacoes nao tem os campos
+   novos. Completa sem apagar o que a pessoa ja mexeu. */
+function completarDemo(d) {
+  Object.assign(d.estudio, Object.assign({ antecedencia_cancelamento: 3, fuso: "America/Sao_Paulo", agenda_no_site: true }, d.estudio));
+  d.sessoes.forEach((s) => {
+    if (!s.token) s.token = novoId();
+    ["confirmacao", "confirmacao_por", "confirmacao_em", "aviso_enviado_em", "reposicao_de"].forEach((k) => { if (!(k in s)) s[k] = null; });
+    ["reposicao_direito", "reposicao_dispensada", "experimental"].forEach((k) => { if (!(k in s)) s[k] = false; });
+  });
+  return d;
 }
 
 function carregarDemo() {
@@ -225,7 +263,7 @@ function carregarDemo() {
       const lido = JSON.parse(bruto);
       // guarda contra um dado gravado por uma versao incompleta
       if (lido && Array.isArray(lido.cobrancas) && Array.isArray(lido.pagamentos)) {
-        demo = lido;
+        demo = completarDemo(lido);
         return demo;
       }
     }
@@ -514,7 +552,12 @@ export async function criarSessao(dados) {
   if (DEMO) {
     const d = carregarDemo();
     const nova = Object.assign(
-      { id: novoId(), estudio_id: "estudio-demo", duracao: d.estudio.duracao_padrao, status: "agendada", criado_em: new Date().toISOString() },
+      {
+        id: novoId(), token: novoId(), estudio_id: "estudio-demo", duracao: d.estudio.duracao_padrao, status: "agendada",
+        confirmacao: null, confirmacao_por: null, confirmacao_em: null, aviso_enviado_em: null,
+        reposicao_direito: false, reposicao_dispensada: false, reposicao_de: null, experimental: false,
+        criado_em: new Date().toISOString(),
+      },
       dados
     );
     d.sessoes.push(nova);
@@ -554,6 +597,71 @@ export async function ultimaSessaoDoAluno(alunoId) {
   const lista = await sessoesDoAluno(alunoId, 30);
   const validas = lista.filter((s) => s.status === "agendada" || s.status === "realizada");
   return validas[0] || null;
+}
+
+/* ===================================================
+   Confirmacao de presenca e reposicoes
+   =================================================== */
+
+/* Guarda quando a mensagem de confirmacao foi aberta no WhatsApp */
+export async function marcarAvisoEnviado(id) {
+  return atualizarSessao(id, { aviso_enviado_em: new Date().toISOString() });
+}
+
+/* Resposta anotada pela propria proprietaria, quando o aluno
+   respondeu direto na conversa em vez de usar o link. */
+export async function registrarResposta(sessao, { vai, comReposicao = false }) {
+  const agora = new Date().toISOString();
+  if (vai) {
+    return atualizarSessao(sessao.id, {
+      confirmacao: "confirmada", confirmacao_por: "estudio", confirmacao_em: agora,
+      status: "agendada", reposicao_direito: false,
+    });
+  }
+  return atualizarSessao(sessao.id, {
+    confirmacao: "recusada", confirmacao_por: "estudio", confirmacao_em: agora,
+    status: "cancelada", reposicao_direito: !!comReposicao,
+  });
+}
+
+/* Volta a sessao para "sem resposta" */
+export async function limparResposta(sessao) {
+  return atualizarSessao(sessao.id, {
+    confirmacao: null, confirmacao_por: null, confirmacao_em: null,
+    status: sessao.status === "cancelada" && sessao.confirmacao === "recusada" ? "agendada" : sessao.status,
+    reposicao_direito: false,
+  });
+}
+
+/* Aulas desmarcadas a tempo que ainda nao foram repostas.
+   Uma reposicao conta enquanto a sessao que repoe nao estiver cancelada. */
+export async function reposicoesPendentes() {
+  let comDireito, repondo;
+  if (DEMO) {
+    const d = carregarDemo();
+    comDireito = clonar(d.sessoes)
+      .filter((s) => s.reposicao_direito && !s.reposicao_dispensada)
+      .map((s) => Object.assign(s, { aluno: clonar(d.alunos.find((a) => a.id === s.aluno_id) || {}) }));
+    repondo = clonar(d.sessoes).filter((s) => s.reposicao_de && s.status !== "cancelada");
+  } else {
+    const c = await sb();
+    comDireito = erro(await c.from("sessoes")
+      .select("*, aluno:alunos(id, nome, telefone, status)")
+      .eq("reposicao_direito", true).eq("reposicao_dispensada", false)
+      .order("inicio", { ascending: false }).limit(200));
+    const ids = comDireito.map((s) => s.id);
+    repondo = ids.length
+      ? erro(await c.from("sessoes").select("id, reposicao_de, status, inicio").in("reposicao_de", ids).neq("status", "cancelada"))
+      : [];
+  }
+  const jaRepostas = new Map(repondo.map((s) => [s.reposicao_de, s]));
+  return comDireito
+    .filter((s) => !jaRepostas.has(s.id))
+    .sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
+}
+
+export async function dispensarReposicao(id) {
+  return atualizarSessao(id, { reposicao_dispensada: true });
 }
 
 /* ===================================================
@@ -802,11 +910,12 @@ export async function atualizarSolicitacao(id, dados) {
 export async function resumo() {
   const inicioHoje = hoje();
   const fimHoje = somarDias(inicioHoje, 1);
-  const [sessoesHoje, abertas, alunos, solicitacoes] = await Promise.all([
+  const [sessoesHoje, abertas, alunos, solicitacoes, reposicoes] = await Promise.all([
     sessoesEntre(inicioHoje, fimHoje),
     cobrancasEmAberto(),
     listarAlunos({}),
     listarSolicitacoes("nova"),
+    reposicoesPendentes(),
   ]);
 
   const hojeIso = iso(inicioHoje);
@@ -841,5 +950,6 @@ export async function resumo() {
     aReceber,
     solicitacoes,
     aniversariantes,
+    reposicoes,
   };
 }

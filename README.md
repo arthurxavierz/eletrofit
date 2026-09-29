@@ -35,16 +35,18 @@ as alterações está em [TESTAR.md](TESTAR.md).
 ## Site
 
 Página única com a apresentação do estúdio, o método, os benefícios, as fotos da
-fachada, as dúvidas frequentes e o formulário de agendamento. O formulário abre o
-WhatsApp com a mensagem pronta e, quando configurado, também registra o pedido no
-painel.
+fachada, as dúvidas frequentes e a agenda da aula experimental: quem visita vê os
+horários livres, escolhe dia e hora, e o pedido chega no painel pronto para
+confirmar. Tem também a página `confirmar.html`, que o aluno abre pelo link do
+WhatsApp para dizer se vem à aula.
 
 Detalhes em [site/README.md](site/README.md).
 
 ## Painel
 
-Agenda com controle de capacidade, alunos com ficha de saúde, planos,
-mensalidades e os pedidos que chegam pelo site. Feito para o celular em primeiro
+Agenda com controle de capacidade, confirmação das aulas do dia pelo WhatsApp com
+regra de reposição, alunos com ficha de saúde, planos, mensalidades e os pedidos
+de aula experimental que chegam pelo site. Feito para o celular em primeiro
 lugar, que é como a agenda é usada de verdade.
 
 Com o `config.js` vazio, o painel abre em modo demonstração, com dados de exemplo
@@ -58,7 +60,8 @@ O passo a passo completo de publicação, do Supabase ao domínio, está em
 
 ## Como publicar, em resumo
 
-1. Crie o projeto no Supabase e rode os três arquivos de `painel/banco`.
+1. Crie o projeto no Supabase e rode os arquivos de `painel/banco`, em ordem
+   (o 03 depois de criar o usuário, a seguir o 04 e o 05).
 2. Crie o usuário da proprietária e ligue ao estúdio.
 3. Preencha `painel/config.js` e `site/config.js` com as chaves do Supabase.
 4. No Netlify, crie dois sites a partir deste repositório. O primeiro sobe com a

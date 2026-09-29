@@ -21,4 +21,10 @@ export const CONFIG = {
 
   // ID do estudio, mostrado ao rodar o arquivo 03_primeiro_acesso.sql
   ESTUDIO_ID: "",
+
+  // Endereco publico do site, sem barra no fim. Exemplo:
+  // https://eletrofitestudio.com.br
+  // Vai nos links de confirmacao de aula que o aluno recebe
+  // no WhatsApp. Vazio, a mensagem pede a resposta por escrito.
+  SITE_URL: "",
 };

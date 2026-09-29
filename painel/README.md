@@ -32,7 +32,8 @@ painel/
 │   ├── 01_tabelas.sql        As tabelas
 │   ├── 02_permissoes.sql     Quem pode ver o quê
 │   ├── 03_primeiro_acesso.sql Cria o estúdio e liga o seu usuário
-│   └── 04_planos_e_pagamentos.sql Periodicidade dos planos e histórico
+│   ├── 04_planos_e_pagamentos.sql Periodicidade dos planos e histórico
+│   └── 05_confirmacoes_e_agenda.sql Confirmação de aula, reposição e agenda do site
 ├── img/
 │   └── eletrofit-raio.png
 └── js/
@@ -41,6 +42,7 @@ painel/
     ├── estado.js    Guarda quem está logado
     ├── ui.js        Botões, formulários e janelas
     ├── util.js      Datas, dinheiro, telefone
+    ├── confirmacao.js Mensagem, link e prazo da confirmação de aula
     └── telas/       Uma pasta por tela do sistema
 ```
 
@@ -90,6 +92,12 @@ o histórico de pagamentos e não apaga nada: todo plano que já existia continu
 mensal, e as baixas antigas entram no histórico. Em uma instalação nova o arquivo
 01 já traz tudo isso, e rodar o 04 depois também não faz mal.
 
+Rode também o `banco/05_confirmacoes_e_agenda.sql`, em instalação nova ou
+antiga. Ele liga a confirmação de aula pelo link do WhatsApp, as reposições e a
+agenda de horários livres no site. Também corrige a regra que deixava o site
+gravar pedidos no painel: antes dela, o pedido era recusado pelo banco. Não apaga
+nada e pode rodar mais de uma vez.
+
 Se aparecer erro, leia a mensagem: quase sempre é um arquivo rodado fora de
 ordem. Rodar de novo o mesmo arquivo não faz mal, ele foi escrito para isso.
 
@@ -117,8 +125,13 @@ export const CONFIG = {
   SUPABASE_URL: "https://seuprojeto.supabase.co",
   SUPABASE_ANON_KEY: "cole aqui a chave anon",
   ESTUDIO_ID: "cole aqui o ID do estudio",
+  SITE_URL: "https://endereco-do-site.com.br",
 };
 ```
+
+O `SITE_URL` é o endereço público do site. Ele vai no link que o aluno recebe
+para confirmar a aula. Vazio, a mensagem pede para responder SIM ou NÃO na
+conversa, e a proprietária anota a resposta no painel.
 
 E o arquivo `site/config.js`, do site, com os mesmos três valores:
 
@@ -210,8 +223,21 @@ Pronto. O sistema está no ar.
   recebimento de ontem. Isso fica guardado no histórico de pagamentos, que você
   vê na aba **Histórico** do Financeiro e na ficha de cada aluno.
 - **Todo começo de mês**, clique em **Gerar mensalidades**.
-- **Quando chegar um pedido pelo site**, ele aparece em **Pedidos**. Dali dá
-  para responder no WhatsApp e transformar em aluno com um clique.
+- **Na véspera ou de manhã**, abra **Confirmar**. Escolha Hoje ou Amanhã e toque
+  no botão amarelo **Enviar para**: o painel abre uma conversa por vez, com a mensagem e
+  o link de confirmação prontos. O aluno toca no link e responde **Vou** ou
+  **Não vou**, e a resposta aparece na tela sozinha. Quem responder direto na
+  conversa pode ser anotado com **Vem** ou **Não vem**.
+- **Reposição.** Quem avisa que não vem até 3 horas antes (ajustável em Ajustes)
+  ganha direito a repor. A aula sai da agenda na hora e entra em **Reposições
+  para marcar**, no fim da tela Confirmar. Quem avisa depois do prazo libera o
+  horário, mas fica sem reposição. A regra é conferida pelo banco, não pelo
+  celular do aluno.
+- **Quando chegar um pedido pelo site**, ele aparece em **Pedidos** com o dia e
+  a hora que a pessoa escolheu na agenda do site. **Confirmar horário** cadastra
+  como aluno experimental (ou aproveita o cadastro, se o celular já existir),
+  coloca a aula na agenda e abre o WhatsApp com a confirmação. Dá para trocar o
+  horário antes de confirmar.
 
 ---
 
@@ -243,8 +269,9 @@ Authentication e se o arquivo 03 foi rodado com esse mesmo e-mail.
 **O painel abre com dados de exemplo.** O `config.js` está vazio ou foi
 publicado sem preencher. Confira o arquivo que subiu para o GitHub.
 
-**O formulário do site não gera pedido no painel.** Confira o `config.js` do
-site, principalmente o `ESTUDIO_ID`. O WhatsApp continua abrindo mesmo assim,
+**O formulário do site não gera pedido no painel.** Rode o arquivo
+`05_confirmacoes_e_agenda.sql`, que corrige a permissão do site. Depois confira o
+`config.js` do site, principalmente o `ESTUDIO_ID`. O WhatsApp continua abrindo mesmo assim,
 então ninguém fica sem atendimento enquanto você resolve.
 
 **Aparece erro falando da biblioteca do Supabase.** O painel carrega essa

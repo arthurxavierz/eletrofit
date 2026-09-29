@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=5">
+<link rel="stylesheet" href="styles.css?v=6">
 <link rel="icon" type="image/png" href="favicon.png?v=1">
 <link rel="apple-touch-icon" href="favicon.png?v=1">
 <script type="application/ld+json">
@@ -48,6 +48,7 @@
 <body>
 
 <a class="skip" href="#inicio">Ir para o conteúdo</a>
+<div class="progress" id="scrollProgress" aria-hidden="true"></div>
 
 <!-- ================= NAVBAR ================= -->
 <header class="nav" id="nav">
@@ -92,10 +93,16 @@
       <img class="hero__img" src="img/fachada-hero.jpg" alt="Fachada do Eletrofit Estúdio à noite, com o letreiro aceso" width="1450" height="1314" fetchpriority="high">
     </picture>
 
+    <div class="hero__glow" aria-hidden="true"></div>
+    <svg class="hero__pulse" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+      <path class="hero__pulse-base" d="M0 96 H560 L590 96 L612 40 L640 150 L664 22 L690 128 L708 80 L724 96 H1440"/>
+      <path class="hero__pulse-run" d="M0 96 H560 L590 96 L612 40 L640 150 L664 22 L690 128 L708 80 L724 96 H1440" pathLength="1000"/>
+    </svg>
+
     <div class="hero__body">
       <div class="hero__copy js-stagger">
         <span class="hero__location reveal">Patrocínio, MG <span aria-hidden="true">/</span> Treino personalizado</span>
-        <h1 class="reveal">ELETRO<span>FIT</span><small>ESTÚDIO</small></h1>
+        <h1 class="hero__title" data-split>ELETRO<span>FIT</span><small>ESTÚDIO</small></h1>
         <p class="hero__statement reveal">Seu corpo em movimento.<br>O próximo passo é seu.</p>
         <p class="hero__description reveal">Tecnologia de eletroestimulação e acompanhamento próximo. Um treino pensado para você, do primeiro movimento à próxima conquista.</p>
         <div class="hero__actions reveal">
@@ -110,13 +117,15 @@
         <a href="#estudio">Conheça o nosso espaço <span aria-hidden="true">↗</span></a>
       </div>
     </div>
+
+    <a class="hero__scroll" href="#metodo" aria-label="Rolar para o método"><span></span></a>
   </div>
 </section>
 
-<div class="studio-strip">
-  <span><strong>WiemsPro</strong> Tecnologia de corpo inteiro</span>
-  <span><strong>Com você</strong> Acompanhamento em cada sessão</span>
-  <a href="#localizacao"><strong>Patrocínio, MG</strong> Av. Jacinto Barbosa, 622 <span aria-hidden="true">↗</span></a>
+<div class="studio-strip js-stagger">
+  <span class="reveal"><strong>WiemsPro</strong> Tecnologia de corpo inteiro</span>
+  <span class="reveal"><strong>Com você</strong> Acompanhamento em cada sessão</span>
+  <a class="reveal" href="#localizacao"><strong>Patrocínio, MG</strong> Av. Jacinto Barbosa, 622 <span aria-hidden="true">↗</span></a>
 </div>
 
 <!-- ================= TICKER ================= -->
@@ -145,6 +154,7 @@
     <p class="lead">O colete envia impulsos aos grandes grupos musculares enquanto você se movimenta. Contração mais ampla, carga leve, pouco impacto nas articulações.</p>
   </div>
 
+  <div class="metodo__trilho" aria-hidden="true"><i id="metodoTrilho"></i></div>
   <ol class="steps js-stagger">
     <li class="step reveal">
       <span class="step__num">01</span>
@@ -263,6 +273,11 @@
 
 <!-- ================= CHAMADA ================= -->
 <section class="cta">
+  <svg class="cta__raios" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path d="M-20 300 L220 300 L260 230 L300 330 L340 180 L380 300 L1220 300"/>
+    <path d="M-20 120 L520 120 L550 70 L585 160 L620 40 L650 120 L1220 120"/>
+    <path d="M-20 210 L820 210 L845 170 L870 250 L900 140 L930 210 L1220 210"/>
+  </svg>
   <div class="cta__inner reveal">
     <span class="eyebrow">Seu primeiro passo</span>
     <h2>Vem sentir<br>o seu próximo treino.</h2>
@@ -308,16 +323,47 @@
     <div class="agendar__intro reveal reveal--left">
       <span class="eyebrow">05 / Vamos começar</span>
       <h2 class="section-title">Escolha o melhor<br><em>horário para você</em></h2>
-      <p class="lead">Preencha os dados e o período em que prefere treinar. O WhatsApp abre com a mensagem pronta e o estúdio confirma o seu horário.</p>
+      <p class="lead">Veja os horários livres, escolha o que encaixa na sua rotina e deixe seu contato. O estúdio confirma a aula com você pelo WhatsApp.</p>
       <ul class="agendar__perks">
-        <li>Resposta rápida pelo WhatsApp</li>
+        <li>Horários livres em tempo real</li>
+        <li>Confirmação rápida pelo WhatsApp</li>
         <li>Avaliação antes do primeiro treino</li>
         <li>Atendimento com hora marcada</li>
       </ul>
     </div>
 
-    <form class="agendar__form reveal reveal--right" id="agendarForm" novalidate>
-      <div class="form-heading"><h3>Sua aula experimental</h3><span>Vamos encontrar seu horário.</span></div>
+    <div class="agendar__caixa reveal reveal--right">
+    <form class="agendar__form" id="agendarForm" novalidate>
+      <div class="form-heading"><h3>Sua aula experimental</h3><span>Escolha o dia e o horário. O estúdio confirma pelo WhatsApp.</span></div>
+
+      <fieldset class="agenda" id="agenda" aria-describedby="erro-horario">
+        <legend class="passo"><span>1</span> Escolha o dia</legend>
+        <div class="agenda__dias-wrap">
+          <button type="button" class="agenda__seta" id="diasAntes" aria-label="Ver dias anteriores" disabled>←</button>
+          <div class="agenda__dias" id="agendaDias" role="radiogroup" aria-label="Dias disponíveis">
+            <span class="agenda__carregando">Carregando a agenda</span>
+          </div>
+          <button type="button" class="agenda__seta" id="diasDepois" aria-label="Ver mais dias">→</button>
+        </div>
+        <p class="passo" id="passoHora"><span>2</span> Escolha o horário</p>
+        <div class="agenda__horas" id="agendaHoras" aria-labelledby="passoHora" aria-live="polite">
+          <p class="agenda__dica">Escolha um dia para ver os horários livres.</p>
+        </div>
+        <span class="field__err" id="erro-horario" data-err></span>
+      </fieldset>
+
+      <div class="field field--periodo" id="campoPeriodo" hidden>
+        <label for="f-periodo">Melhor período</label>
+        <select id="f-periodo" name="periodo" aria-describedby="erro-periodo">
+          <option value="" disabled selected>Selecione</option>
+          <option>Manhã, 07h às 12h</option>
+          <option>Tarde, 12h às 18h</option>
+          <option>Noite, 18h às 20h30</option>
+        </select>
+        <span class="field__err" id="erro-periodo" data-err></span>
+      </div>
+
+      <p class="passo passo--dados"><span id="passoDadosNum">3</span> Seus dados</p>
       <div class="field">
         <label for="f-nome">Nome</label>
         <input id="f-nome" name="nome" type="text" autocomplete="name" placeholder="Como podemos te chamar" required minlength="2" maxlength="120" aria-describedby="erro-nome">
@@ -325,12 +371,12 @@
       </div>
 
       <div class="field">
-        <label for="f-celular">Celular</label>
+        <label for="f-celular">Celular com WhatsApp</label>
         <input id="f-celular" name="celular" type="tel" inputmode="tel" autocomplete="tel" placeholder="(34) 90000-0000" required aria-describedby="erro-celular">
         <span class="field__err" id="erro-celular" data-err></span>
       </div>
 
-      <div class="field">
+      <div class="field field--full">
         <label for="f-objetivo">Objetivo</label>
         <select id="f-objetivo" name="objetivo" required aria-describedby="erro-objetivo">
           <option value="" disabled selected>Selecione</option>
@@ -343,24 +389,32 @@
         <span class="field__err" id="erro-objetivo" data-err></span>
       </div>
 
-      <div class="field">
-        <label for="f-periodo">Melhor período</label>
-        <select id="f-periodo" name="periodo" required aria-describedby="erro-periodo">
-          <option value="" disabled selected>Selecione</option>
-          <option>Manhã, 07h às 12h</option>
-          <option>Tarde, 12h às 18h</option>
-          <option>Noite, 18h às 20h30</option>
-        </select>
-        <span class="field__err" id="erro-periodo" data-err></span>
+      <div class="agendar__resumo" id="agendarResumo" hidden>
+        <span>Sua aula</span>
+        <strong id="resumoTexto"></strong>
       </div>
 
-      <button type="submit" class="btn btn--primary agendar__submit">
-        <svg viewBox="0 0 32 32" aria-hidden="true" class="agendar__wa"><path fill="currentColor" d="M16 3C9 3 3.3 8.7 3.3 15.7c0 2.4.7 4.6 1.8 6.5L3 29l7-1.8c1.8 1 3.9 1.6 6 1.6 7 0 12.7-5.7 12.7-12.7S23 3 16 3Zm0 23.1c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.1 1.1 1.1-4-.3-.4a10.3 10.3 0 0 1-1.6-5.5C5.4 9.9 10.1 5.3 16 5.3S26.6 9.9 26.6 15.7 21.9 26.1 16 26.1Zm5.8-7.8c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.6 8.6 0 0 1-2.6-1.6 9.5 9.5 0 0 1-1.8-2.2c-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.4-.6s0-.4 0-.6-.7-1.7-1-2.3-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4A3.6 3.6 0 0 0 8.9 12a6.3 6.3 0 0 0 1.3 3.3 14.4 14.4 0 0 0 5.5 4.9c.8.3 1.4.5 1.9.7a4.5 4.5 0 0 0 2 .1c.6-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5-.3-.2-.6-.3Z"/></svg>
-        Enviar pelo WhatsApp
+      <button type="submit" class="btn btn--primary agendar__submit" id="agendarEnviar">
+        <span class="agendar__submit-texto">Pedir minha aula experimental</span>
+        <span aria-hidden="true">↗</span>
       </button>
-      <p class="agendar__note">Usaremos seus dados para responder ao pedido de agendamento. O horário será confirmado pelo estúdio.</p>
+      <p class="agendar__note">Usaremos seus dados só para responder ao pedido. O horário fica reservado até o estúdio confirmar com você pelo WhatsApp.</p>
       <p class="agendar__ok" id="agendarOk" role="status" hidden>Mensagem pronta. <a id="agendarLink" target="_blank" rel="noopener">Continuar no WhatsApp ↗</a></p>
     </form>
+
+    <div class="agendar__sucesso" id="agendarSucesso" tabindex="-1" hidden>
+      <span class="sucesso__selo" aria-hidden="true">
+        <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27 l7 7 l15 -16"/></svg>
+      </span>
+      <h3 id="sucessoTitulo">Pedido enviado!</h3>
+      <p class="sucesso__quando" id="sucessoQuando"></p>
+      <p id="sucessoTexto">O estúdio já recebeu o seu pedido e vai confirmar o horário com você pelo WhatsApp.</p>
+      <div class="sucesso__acoes">
+        <a class="btn btn--primary" id="sucessoWhats" target="_blank" rel="noopener">Falar no WhatsApp agora <span aria-hidden="true">↗</span></a>
+        <button type="button" class="text-link" id="sucessoNovo">Escolher outro horário</button>
+      </div>
+    </div>
+    </div>
   </div>
 </section>
 
@@ -422,7 +476,7 @@
 
 <!-- ================= FOOTER ================= -->
 <footer class="foot">
-  <div class="foot__wordmark" aria-hidden="true">ELETRO<span>FIT</span></div>
+  <div class="foot__wordmark" aria-hidden="true"><span class="foot__wm-in">ELETRO<span>FIT</span></span></div>
   <div class="foot__inner">
     <div class="foot__brand">
       <img src="img/eletrofit-raio.png" alt="Eletrofit Estúdio" width="512" height="512">
@@ -449,7 +503,7 @@
 </footer>
 
 <!-- ================= WHATSAPP FLUTUANTE ================= -->
-<a class="wa" href="https://wa.me/5534991208519?text=Ol%C3%A1%21%20Quero%20agendar%20uma%20aula%20experimental%20na%20Eletrofit." target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+<a class="wa" id="waFloat" href="https://wa.me/5534991208519?text=Ol%C3%A1%21%20Quero%20agendar%20uma%20aula%20experimental%20na%20Eletrofit." target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
   <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3C9 3 3.3 8.7 3.3 15.7c0 2.4.7 4.6 1.8 6.5L3 29l7-1.8c1.8 1 3.9 1.6 6 1.6 7 0 12.7-5.7 12.7-12.7S23 3 16 3Zm0 23.1c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.1 1.1 1.1-4-.3-.4a10.3 10.3 0 0 1-1.6-5.5C5.4 9.9 10.1 5.3 16 5.3S26.6 9.9 26.6 15.7 21.9 26.1 16 26.1Zm5.8-7.8c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.6 8.6 0 0 1-2.6-1.6 9.5 9.5 0 0 1-1.8-2.2c-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.4-.6s0-.4 0-.6-.7-1.7-1-2.3-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4A3.6 3.6 0 0 0 8.9 12a6.3 6.3 0 0 0 1.3 3.3 14.4 14.4 0 0 0 5.5 4.9c.8.3 1.4.5 1.9.7a4.5 4.5 0 0 0 2 .1c.6-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5-.3-.2-.6-.3Z"/></svg>
 </a>
 
@@ -466,6 +520,6 @@
     <button type="button" id="galleryNext" aria-label="Próxima foto" title="Próxima foto">→</button>
   </div>
 </dialog>
-<script src="script.js?v=5" defer></script>
+<script src="script.js?v=6" defer></script>
 </body>
 </html>

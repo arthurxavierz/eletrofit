@@ -1,0 +1,44 @@
+/* Página de confirmação de aula. Usa a base do styles.css. */
+.conf-page{min-height:100dvh;background:var(--dark);color:white;overflow-x:hidden}
+.conf-page::before{content:"";position:fixed;left:50%;top:-30vmax;width:90vmax;height:90vmax;margin-left:-45vmax;border-radius:50%;background:radial-gradient(closest-side,#f1ce3824,transparent);pointer-events:none;animation:respira 7s ease-in-out infinite alternate}
+.conf{position:relative;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.75rem;padding:2rem 1.1rem}
+.conf__marca{display:flex;align-items:center;gap:.6rem;font:400 1.6rem/1 var(--font-display)}
+.conf__marca img{width:34px;height:38px;object-fit:contain}
+.conf__marca span span{color:var(--gold)}
+.conf__cartao{width:min(460px,100%);background:#1f2420;border:1px solid #ffffff1c;border-radius:16px;padding:2rem 1.4rem;box-shadow:0 40px 90px -40px #000;position:relative;animation:surge .5s var(--ease) both}
+.conf__cartao::before{content:"";position:absolute;left:1.5rem;right:1.5rem;top:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.conf__cartao>div{animation:surge .4s var(--ease) both}
+.conf__cartao h1{font:400 2.6rem/1.05 var(--font-display);text-transform:uppercase;outline:none}
+.conf__kicker{display:block;font-size:.7rem;font-weight:800;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem}
+.conf__quando{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.2rem 1rem;margin:1.5rem 0;padding:1.1rem 1.2rem;border-radius:12px;background:var(--gold);color:var(--ink)}
+.conf__dia{grid-column:1/-1;font-size:.82rem;font-weight:800}
+.conf__hora{font:400 3.2rem/1 var(--font-display)}
+.conf__dur{font-size:.75rem;font-weight:700;padding-bottom:.4rem}
+.conf__pergunta{font-size:1.05rem;font-weight:700;margin-bottom:1rem}
+.conf__botoes{display:grid;gap:.6rem}
+.conf__botoes .btn{width:100%}
+.conf__botoes .btn--ghost{color:white;border-color:#ffffff40}
+.conf__botoes .btn--ghost:hover{background:#ffffff12;border-color:white}
+.conf__botoes .btn--dark{background:#ad3b32}
+.conf__botoes .btn--dark:hover{background:#c24a40}
+.btn.is-feito{background:#27764a;color:white}
+.btn.is-loading{pointer-events:none;opacity:.8}
+.btn.is-loading::after{content:"";position:static;width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;opacity:1;background:none;animation:gira .7s linear infinite;inset:auto}
+.conf__prazo{margin-top:1.2rem;font-size:.8rem;color:#c3cbc0;padding-left:.8rem;border-left:2px solid var(--gold)}
+.conf__prazo--fora{border-color:#ffb4ab;color:#ffcfc9}
+.conf__prazo:empty{display:none}
+.conf__texto{color:#c3cbc0;font-size:.92rem;margin:1rem 0 1.5rem}
+#estadoFim{text-align:center}
+#estadoFim .btn{margin-top:.25rem}
+.conf__selo{display:inline-block;width:80px;height:80px;margin-bottom:1rem}
+.conf__selo svg{width:100%;height:100%;fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.conf__selo circle{stroke-dasharray:151;stroke-dashoffset:151;animation:traco .7s .1s var(--ease) forwards}
+.conf__selo path{stroke-width:3.5;stroke-dasharray:40;stroke-dashoffset:40;animation:traco .45s .7s var(--ease) forwards}
+.conf__selo--ok svg{stroke:#6fdc93}
+.conf__selo--erro svg{stroke:#ffb4ab}
+.conf__selo--erro path{d:path("M18 18 L34 34 M34 18 L18 34")}
+.conf__carregando{display:flex;flex-direction:column;align-items:center;gap:1rem;padding:2rem 0;color:#c3cbc0;font-size:.9rem}
+.conf__spinner{width:34px;height:34px;border:3px solid #ffffff25;border-top-color:var(--gold);border-radius:50%;animation:gira .8s linear infinite}
+.conf__rodape{font-size:.7rem;color:#8f998b;text-align:center}
+@media(min-width:600px){.conf__cartao{padding:2.5rem 2.25rem}.conf__botoes{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){.conf__selo circle,.conf__selo path{stroke-dashoffset:0}}

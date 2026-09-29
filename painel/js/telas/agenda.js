@@ -58,7 +58,10 @@ export async function montar(raiz) {
         const aluno = s.aluno || {};
         coluna.appendChild(
           el("button", {
-            class: "cartao-sessao " + (s.status === "realizada" ? "cartao-sessao--feita" : s.status === "falta" ? "cartao-sessao--falta" : ""),
+            class: "cartao-sessao " + (s.status === "realizada" ? "cartao-sessao--feita" : s.status === "falta" ? "cartao-sessao--falta" : "")
+              + (s.status === "agendada" && s.confirmacao === "confirmada" ? " cartao-sessao--confirmada" : "")
+              + (s.experimental ? " cartao-sessao--exp" : ""),
+            title: s.status === "agendada" ? (s.confirmacao === "confirmada" ? "Confirmou presença" : "Sem confirmação") : null,
             onclick: () => abrirAcoesSessao(s, recarregar),
           }, [
             el("strong", { texto: hora(s.inicio) }),
